@@ -2,240 +2,222 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Coool Video Editor</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 20px;
-      background: #101018;
-      color: white;
-      font-family: Arial, sans-serif;
-    }
-    h1 { text-align: center; color: #a78bfa; }
-    p { text-align: center; color: #bbb; }
-    .card {
-      max-width: 600px;
-      margin: 18px auto;
-      padding: 18px;
-      background: #20202c;
-      border-radius: 16px;
-      border: 1px solid #383849;
-    }
-    label {
-      display: block;
-      margin: 14px 0 8px;
-      color: #ddd;
-    }
-    input, button {
-      width: 100%;
-      padding: 13px;
-      margin: 6px 0;
-      border-radius: 9px;
-      font-size: 16px;
-    }
-    input[type="number"] {
-      background: #30303d;
-      color: white;
-      border: 1px solid #555;
-    }
-    input[type="file"] {
-      color: white;
-      background: #30303d;
-    }
-    video {
-      width: 100%;
-      max-height: 350px;
-      margin-top: 12px;
-      background: black;
-      border-radius: 12px;
-    }
-    button {
-      background: #8b5cf6;
-      color: white;
-      border: 0;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:disabled { opacity: .45; }
-    .secondary { background: #414154; }
-    .times {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    #status { color: #c4b5fd; line-height: 1.5; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coool Video Editor</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:#101018;color:white;font-family:Arial,sans-serif}
+h1{text-align:center;color:#a78bfa;font-size:30px}
+p{text-align:center;color:#bbb}
+.card{background:#20202c;padding:18px;border-radius:18px;margin:18px 0}
+label{display:block;margin:12px 0;color:#ddd}
+input,button{width:100%;padding:14px;margin:8px 0;border-radius:10px;font-size:16px}
+input{background:#30303d;color:white;border:1px solid #555}
+button{background:#8b5cf6;color:white;border:0;font-weight:bold}
+button:disabled{opacity:.45}
+video{width:100%;max-height:350px;background:#000;border-radius:12px}
+.row{display:flex;gap:12px}
+.row>div{flex:1;min-width:0}
+#status{color:#c4b5fd;overflow-wrap:anywhere}
+</style>
 </head>
 <body>
-  <h1>🎬 Coool Video Editor</h1>
-  <p>Edit your videos on your phone</p>
+<h1>🎬 Coool Video Editor</h1>
+<p>मोबाईलवर व्हिडिओचा भाग निवडा आणि MP4 डाउनलोड करा.</p>
 
-  <div class="card">
-    <label for="file">📁 मोबाईलमधून व्हिडिओ निवडा</label>
-    <input id="file" type="file" accept="video/*">
+<div class="card">
+<label>📁 मोबाईलमधून व्हिडिओ निवडा</label>
+<input type="file" id="file" accept="video/*">
+<video id="video" controls playsinline></video>
+<p id="duration">व्हिडिओ निवडलेला नाही.</p>
+</div>
 
-    <video id="video" controls playsinline></video>
-    <p id="duration">व्हिडिओ निवडलेला नाही</p>
-  </div>
+<div class="card">
+<h2>✂️ व्हिडिओचा भाग निवडा</h2>
+<div class="row">
+<div>
+<label for="start">सुरुवातीची वेळ (सेकंद)</label>
+<input id="start" type="number" min="0" value="0" step="0.1">
+<button id="setStart" disabled>सध्याची वेळ सुरुवात ठेवा</button>
+</div>
+<div>
+<label for="end">शेवटची वेळ (सेकंद)</label>
+<input id="end" type="number" min="0" value="0" step="0.1">
+<button id="setEnd" disabled>सध्याची वेळ शेवट ठेवा</button>
+</div>
+</div>
+<button id="preview" disabled>▶️ निवडलेला भाग पाहा</button>
+<button id="stop" disabled>⏹️ Preview थांबवा</button>
+<button id="export" disabled>⬇️ MP4 तयार करून डाउनलोड करा</button>
+<p id="status">सुरू करण्यासाठी व्हिडिओ निवडा.</p>
+</div>
 
-  <div class="card">
-    <h3>✂️ व्हिडिओचा भाग निवडा</h3>
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+<script>
+const fileInput=document.getElementById('file');
+const video=document.getElementById('video');
+const startInput=document.getElementById('start');
+const endInput=document.getElementById('end');
+const status=document.getElementById('status');
+const durationText=document.getElementById('duration');
+const previewBtn=document.getElementById('preview');
+const stopBtn=document.getElementById('stop');
+const exportBtn=document.getElementById('export');
+const setStartBtn=document.getElementById('setStart');
+const setEndBtn=document.getElementById('setEnd');
 
-    <div class="times">
-      <div>
-        <label for="start">सुरुवातीची वेळ (सेकंद)</label>
-        <input id="start" type="number" min="0" step="0.1" value="0">
-      </div>
-      <div>
-        <label for="end">शेवटची वेळ (सेकंद)</label>
-        <input id="end" type="number" min="0" step="0.1" value="0">
-      </div>
-    </div>
+let selectedFile=null;
+let videoURL=null;
+let ffmpeg=null;
+let busy=false;
 
-    <button id="preview" disabled>▶️ निवडलेला भाग पाहा</button>
-    <button id="stopPreview" class="secondary" disabled>⏹️ Preview थांबवा</button>
-    <button id="setStart" class="secondary" disabled>सध्याची वेळ सुरुवात म्हणून निवडा</button>
-    <button id="setEnd" class="secondary" disabled>सध्याची वेळ शेवट म्हणून निवडा</button>
+function say(message){status.textContent=message;}
 
-    <p id="status">सुरू करण्यासाठी व्हिडिओ निवड.</p>
-  </div>
+function validRange(){
+ const s=Number(startInput.value);
+ const e=Number(endInput.value);
+ return selectedFile && Number.isFinite(s) && Number.isFinite(e)
+ && s>=0 && e>s && e<=video.duration;
+}
 
-  <script>
-    const fileInput = document.getElementById('file');
-    const video = document.getElementById('video');
-    const startInput = document.getElementById('start');
-    const endInput = document.getElementById('end');
-    const durationText = document.getElementById('duration');
-    const status = document.getElementById('status');
+function updateButtons(){
+ const ready=!!selectedFile && Number.isFinite(video.duration);
+ previewBtn.disabled=busy || !validRange();
+ exportBtn.disabled=busy || !validRange();
+ setStartBtn.disabled=busy || !ready;
+ setEndBtn.disabled=busy || !ready;
+}
 
-    const previewBtn = document.getElementById('preview');
-    const stopBtn = document.getElementById('stopPreview');
-    const setStartBtn = document.getElementById('setStart');
-    const setEndBtn = document.getElementById('setEnd');
+fileInput.addEventListener('change',()=>{
+ const f=fileInput.files[0];
+ if(!f)return;
+ if(!f.type.startsWith('video/')){
+  say('कृपया व्हिडिओ फाइल निवड.');
+  return;
+ }
+ selectedFile=f;
+ if(videoURL)URL.revokeObjectURL(videoURL);
+ videoURL=URL.createObjectURL(f);
+ video.src=videoURL;
+ video.load();
+ say('व्हिडिओ लोड होत आहे...');
+});
 
-    let videoURL = null;
-    let previewing = false;
+video.addEventListener('loadedmetadata',()=>{
+ startInput.value=0;
+ endInput.value=video.duration.toFixed(1);
+ durationText.textContent='एकूण वेळ: '+video.duration.toFixed(1)+' सेकंद';
+ say('व्हिडिओ तयार आहे. सुरुवात आणि शेवट निवड.');
+ updateButtons();
+});
 
-    function say(message) {
-      status.textContent = message;
-    }
+video.addEventListener('error',()=>{
+ if(selectedFile)say('हा व्हिडिओ उघडता आला नाही. दुसरी फाइल वापरून पाहा.');
+});
 
-    function updateButtons(enabled) {
-      previewBtn.disabled = !enabled;
-      stopBtn.disabled = !enabled;
-      setStartBtn.disabled = !enabled;
-      setEndBtn.disabled = !enabled;
-    }
+[startInput,endInput].forEach(el=>{
+ el.addEventListener('input',updateButtons);
+});
 
-    fileInput.addEventListener('change', () => {
-      const file = fileInput.files[0];
-      if (!file) return;
+setStartBtn.addEventListener('click',()=>{
+ startInput.value=video.currentTime.toFixed(1);
+ updateButtons();
+});
 
-      if (videoURL) URL.revokeObjectURL(videoURL);
-      videoURL = URL.createObjectURL(file);
+setEndBtn.addEventListener('click',()=>{
+ endInput.value=video.currentTime.toFixed(1);
+ updateButtons();
+});
 
-      video.src = videoURL;
-      video.load();
-      updateButtons(false);
-      say('व्हिडिओ लोड होत आहे...');
-      durationText.textContent = file.name;
-    });
+previewBtn.addEventListener('click',()=>{
+ if(!validRange())return;
+ video.currentTime=Number(startInput.value);
+ video.play();
+ stopBtn.disabled=false;
+ say('निवडलेला भाग पाहत आहे...');
+});
 
-    video.addEventListener('loadedmetadata', () => {
-      if (!Number.isFinite(video.duration)) {
-        say('या व्हिडिओची वेळ वाचता आली नाही.');
-        return;
-      }
+video.addEventListener('timeupdate',()=>{
+ if(video.currentTime>=Number(endInput.value) && !video.paused){
+  video.pause();
+  stopBtn.disabled=true;
+ }
+});
 
-      startInput.value = 0;
-      endInput.value = video.duration.toFixed(1);
-      startInput.max = video.duration;
-      endInput.max = video.duration;
-      durationText.textContent =
-        'एकूण वेळ: ' + video.duration.toFixed(1) + ' सेकंद';
+stopBtn.addEventListener('click',()=>{
+ video.pause();
+ stopBtn.disabled=true;
+ say('Preview थांबवला.');
+});
 
-      updateButtons(true);
-      say('व्हिडिओ तयार आहे. सुरुवात आणि शेवट निवड.');
-    });
+async function getFFmpeg(){
+ if(ffmpeg)return ffmpeg;
+ if(!window.FFmpegWASM)throw new Error('FFmpeg लायब्ररी लोड झाली नाही. इंटरनेट तपासून पेज पुन्हा उघड.');
+ const {FFmpeg}=window.FFmpegWASM;
+ ffmpeg=new FFmpeg();
+ ffmpeg.on('log',({message})=>{
+  if(message)status.textContent='प्रोसेस सुरू आहे... '+message.slice(-100);
+ });
+ const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/';
+ const toBlobURL=async(url,type)=>{
+  const response=await fetch(url);
+  if(!response.ok)throw new Error('व्हिडिओ टूल डाउनलोड झाले नाही. पुन्हा प्रयत्न कर.');
+  return URL.createObjectURL(new Blob([await response.arrayBuffer()],{type}));
+ };
+ say('व्हिडिओ टूल डाउनलोड होत आहे. थोडा वेळ थांब...');
+ const coreURL=await toBlobURL(base+'ffmpeg-core.js','text/javascript');
+ const wasmURL=await toBlobURL(base+'ffmpeg-core.wasm','application/wasm');
+ await ffmpeg.load({coreURL,wasmURL});
+ return ffmpeg;
+}
 
-    function getTimes() {
-      const start = Number(startInput.value);
-      const end = Number(endInput.value);
+exportBtn.addEventListener('click',async()=>{
+ if(!validRange()||busy)return;
+ const s=Number(startInput.value);
+ const e=Number(endInput.value);
+ const duration=e-s;
+ busy=true;
+ updateButtons();
+ exportBtn.disabled=true;
+ let inputName='input_video';
+ let outputName='coool-video.mp4';
 
-      if (!video.src || !Number.isFinite(video.duration)) {
-        say('आधी व्हिडिओ निवड.');
-        return null;
-      }
-
-      if (
-        !Number.isFinite(start) ||
-        !Number.isFinite(end) ||
-        start < 0 ||
-        end > video.duration ||
-        start >= end
-      ) {
-        say('योग्य वेळ निवड. शेवटची वेळ सुरुवातीपेक्षा मोठी असावी.');
-        return null;
-      }
-
-      return { start, end };
-    }
-
-    previewBtn.addEventListener('click', async () => {
-      const times = getTimes();
-      if (!times) return;
-
-      previewing = true;
-      video.currentTime = times.start;
-      say('निवडलेला भाग पाहत आहे...');
-      try {
-        await video.play();
-      } catch (error) {
-        say('व्हिडिओ सुरू करण्यासाठी Play दाब.');
-      }
-    });
-
-    video.addEventListener('timeupdate', () => {
-      if (previewing && video.currentTime >= Number(endInput.value)) {
-        video.pause();
-        previewing = false;
-        say('निवडलेला भाग पूर्ण झाला.');
-      }
-    });
-
-    stopBtn.addEventListener('click', () => {
-      video.pause();
-      previewing = false;
-      say('Preview थांबवला.');
-    });
-
-    setStartBtn.addEventListener('click', () => {
-      startInput.value = video.currentTime.toFixed(1);
-      say('सुरुवातीची वेळ निवडली.');
-    });
-
-    setEndBtn.addEventListener('click', () => {
-      endInput.value = video.currentTime.toFixed(1);
-      say('शेवटची वेळ निवडली.');
-    });
-
-    startInput.addEventListener('input', () => {
-      previewing = false;
-      video.pause();
-    });
-
-    endInput.addEventListener('input', () => {
-      previewing = false;
-      video.pause();
-    });
-
-    window.addEventListener('beforeunload', () => {
-      if (videoURL) URL.revokeObjectURL(videoURL);
-    });
-  </script>
+ try{
+  say('व्हिडिओ तयार होत आहे. पेज बंद करू नकोस...');
+  const engine=await getFFmpeg();
+  const ext=(selectedFile.name.split('.').pop()||'mp4').toLowerCase();
+  inputName='input_video.'+ext.replace(/[^a-z0-9]/g,'');
+  await engine.writeFile(inputName,new Uint8Array(await selectedFile.arrayBuffer()));
+  await engine.exec([
+   '-ss',String(s),
+   '-i',inputName,
+   '-t',String(duration),
+   '-c:v','libx264',
+   '-preset','ultrafast',
+   '-c:a','aac',
+   '-movflags','+faststart',
+   outputName
+  ]);
+  const data=await engine.readFile(outputName);
+  const blob=new Blob([data.buffer],{type:'video/mp4'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='coool-video.mp4';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+  say('झाले! डाउनलोड सुरू झाले. मोबाईलच्या Downloads फोल्डरमध्ये पाहा.');
+ }catch(err){
+  console.error(err);
+  say('व्हिडिओ तयार झाला नाही: '+(err.message||'त्रुटी')+' — कमी आकाराचा व्हिडिओ वापरून पाहा.');
+ }finally{
+  busy=false;
+  updateButtons();
+ }
+});
+</script>
 </body>
 </html>
-
