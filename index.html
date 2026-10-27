@@ -1,476 +1,277 @@
 
 <!DOCTYPE html>
-<html lang="mr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coool Video Editor</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101116;color:white;font-family:Arial,sans-serif}
-header{text-align:center;padding:18px;background:#20202c}
-h1{color:#b9a2ff;margin:0}
-main{max-width:850px;margin:auto;padding:12px}
-.page{display:none}.page.active{display:block}
-.panel{background:#20212d;padding:14px;margin:12px 0;border-radius:13px}
-h3{color:#c4b5fd;margin-top:0}
-button,select{border:0;border-radius:8px;padding:11px;background:#7354e8;color:white;font-size:14px}
-button{cursor:pointer}
-button:disabled{opacity:.5}
-input[type=file]{width:100%;margin:8px 0}
-input[type=range]{width:100%}
-label{display:block;margin:12px 0 6px}
-video{width:100%;max-height:50vh;background:#000;border-radius:10px}
-.hero{min-height:65vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#20202c;border-radius:16px;padding:22px}
-.hero h2{color:#b9a2ff;font-size:28px}
-.choose{display:block;background:#7354e8;padding:16px;border-radius:10px;margin:15px 0;cursor:pointer}
-#videoFile{display:none}
-.track{background:#20212d;border-radius:12px;padding:12px;margin:10px 0}
-.trackhead{display:flex;align-items:center;gap:8px;margin-bottom:9px}
-.trackname{flex:1;overflow-wrap:anywhere}
-.trackname strong{display:block}
-.trackname small{color:#bbb}
-.clip{min-height:43px;border-radius:7px;padding:10px;background:#403666;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.musicclip{background:#24594e}
-.effectclip{background:#65502a}
-.trackbuttons{display:flex;gap:7px;margin-top:9px}
-.trackbuttons button{flex:1}
-.add{width:100%;margin-top:9px;background:#353548}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-select{width:100%;margin:5px 0}
-#export{background:#099b70}
-#status{color:#c4b5fd;overflow-wrap:anywhere}
-#seek{accent-color:#9b83ff}
-small{color:#bbb}
-#playtime{font-size:13px;color:#c4b5fd}
-.hidden{display:none!important}
+body{margin:0;background:#10111b;color:white;font-family:Arial,sans-serif}
+header{padding:18px;text-align:center;background:#191b2c;border-bottom:1px solid #30334a}
+header h1{margin:0;color:#7c83ff;font-size:25px}
+header p{margin:7px 0 0;color:#b9bad0;font-size:13px}
+.page{display:none;padding:18px;max-width:850px;margin:auto}
+.page.active{display:block}
+.card{background:#1b1d2d;border:1px solid #34364d;border-radius:16px;padding:18px;margin:14px 0}
+h2{margin-top:0}
+button,.filebtn{background:#656cff;color:white;border:0;border-radius:10px;padding:12px 15px;font-size:14px;font-weight:bold;cursor:pointer;margin:4px}
+button.secondary{background:#34374d}
+button:active{transform:scale(.98)}
+input[type=file]{width:100%;margin:14px 0}
+video{width:100%;max-height:340px;background:#050505;border-radius:12px}
+label{display:block;margin:15px 0 7px;color:#dedff0}
+input[type=range],select,input[type=text]{width:100%}
+input[type=range]{accent-color:#7c83ff}
+input[type=text],select{padding:10px;background:#292b40;color:white;border:1px solid #484b66;border-radius:8px}
+.row{display:flex;flex-wrap:wrap;gap:5px}
+.row button{flex:1}
+#timeline{width:100%;margin:15px 0;accent-color:#7c83ff}
+#status{color:#aeb2ff;font-size:13px}
+#textOverlay{position:absolute;top:40%;left:0;width:100%;text-align:center;font-size:28px;font-weight:bold;text-shadow:2px 2px 4px black;pointer-events:none;white-space:pre-wrap}
+#videoWrap{position:relative}
+.note{font-size:12px;color:#b6b8ce;line-height:1.6}
 </style>
 </head>
 <body>
 <header>
-<h1>🎬 Coool Video Editor</h1>
-<p>Video • Music • Effects • Export MP4</p>
+  <h1>🎬 Coool Video Editor</h1>
+  <p>Edit videos your way</p>
 </header>
 
-<main>
 <!-- PAGE 1 -->
-<section id="home" class="page active">
-<div class="hero">
-<div style="font-size:60px">🎬</div>
-<h2>Coool Video Editor</h2>
-<p>Your videos. Your creativity.</p>
-<label class="choose" for="videoFile">📂 Choose Video File</label>
-<input id="videoFile" type="file" accept="video/*">
-<p id="chosenName">व्हिडिओ निवडलेला नाही</p>
-<button id="next" disabled style="width:100%;padding:15px">Next / Edit Video ➜</button>
-</div>
-</section>
-
-<!-- PAGE 2 -->
-<section id="editor" class="page">
-<button id="back">⬅ Back to Home</button>
-
-<section class="panel">
-<h3>🎥 Video Preview</h3>
-<video id="video" controls playsinline></video>
-<p id="playtime">00:00 / 00:00</p>
-<label>⏱️ Timeline Position</label>
-<input id="seek" type="range" min="0" max="1000" value="0">
-</section>
-
-<section class="panel">
-<h3>✂️ Editing Timeline</h3>
-
-<!-- VIDEO TRACK -->
-<div class="track">
-<div class="trackhead">
-<span>🎬</span>
-<div class="trackname">
-<strong>VIDEO LINE</strong>
-<small id="videoTrackName">No video selected</small>
-</div>
-</div>
-<div class="clip" id="videoClip">Video clip</div>
-<div class="trackbuttons">
-<button id="editVideo">✏️ Edit / Change</button>
-<button id="deleteVideo" style="background:#693442">🗑 Delete</button>
-</div>
-<input id="changeVideo" class="hidden" type="file" accept="video/*">
-</div>
-
-<!-- MUSIC TRACK -->
-<div class="track">
-<div class="trackhead">
-<span>🎵</span>
-<div class="trackname">
-<strong>MUSIC LINE</strong>
-<small id="musicTrackName">Music not added</small>
-</div>
-</div>
-<div class="clip musicclip" id="musicClip">+ Add Music</div>
-<div class="trackbuttons">
-<button id="editMusic">✏️ Add / Edit Music</button>
-<button id="deleteMusic" style="background:#693442">🗑 Delete</button>
-</div>
-<input id="musicFile" class="hidden" type="file" accept="audio/*">
-<label>Music Volume: <span id="mvText">70%</span></label>
-<input id="musicVolume" type="range" min="0" max="100" value="70">
-<label>Original Video Sound: <span id="ovText">100%</span></label>
-<input id="originalVolume" type="range" min="0" max="100" value="100">
-</div>
-
-<!-- EFFECT TRACK -->
-<div class="track">
-<div class="trackhead">
-<span>✨</span>
-<div class="trackname">
-<strong>EFFECTS LINE</strong>
-<small id="effectTrackName">No effect selected</small>
-</div>
-</div>
-<div class="clip effectclip" id="effectClip">+ Add Effect</div>
-<label>Add / Edit Effect</label>
-<select id="effect">
-<option value="none">Original (No Effect)</option>
-<option value="grayscale=1">Black & White</option>
-<option value="contrast=1.4:saturation=1.3">Cinematic</option>
-<option value="saturation=2">Vivid</option>
-<option value="brightness=0.1">Bright</option>
-<option value="contrast=1.5">High Contrast</option>
-</select>
-<button id="removeEffect" style="background:#693442;width:100%;margin-top:8px">🗑 Remove Effect</button>
-</div>
-</section>
-
-<section class="panel">
-<h3>🎨 Brightness & Contrast</h3>
-<label>Brightness: <span id="bText">0</span></label>
-<input id="brightness" type="range" min="-50" max="50" value="0">
-<label>Contrast: <span id="cText">100%</span></label>
-<input id="contrast" type="range" min="50" max="200" value="100">
-</section>
-
-<section class="panel">
-<h3>⚡ Speed</h3>
-<label>Speed: <span id="speedText">1x</span></label>
-<input id="speed" type="range" min="25" max="200" step="25" value="100">
-</section>
-
-<section class="panel">
-<h3>🖼️ Background, Ratio & Rotate</h3>
-<label>Background Colour</label>
-<input id="bg" type="color" value="#101116">
-<label>Video Ratio</label>
-<select id="ratio">
-<option value="original">Original</option>
-<option value="16:9">16:9 YouTube</option>
-<option value="9:16">9:16 Shorts/Reels</option>
-<option value="1:1">1:1 Square</option>
-</select>
-<label>Rotate</label>
-<select id="rotate">
-<option value="0">0°</option>
-<option value="90">90°</option>
-<option value="180">180°</option>
-<option value="270">270°</option>
-</select>
-</section>
-
-<section class="panel">
-<div class="grid">
-<button id="reset">Reset Preview</button>
-<button id="export">📤 Export MP4</button>
-</div>
-<button id="download" disabled style="width:100%;margin-top:9px">⬇ Download MP4</button>
-<p id="status">व्हिडिओ निवडून सुरुवात कर.</p>
-<small>Export साठी इंटरनेट आणि पुरेशी मोबाईल मेमरी आवश्यक आहे.</small>
-</section>
-</section>
+<main id="homePage" class="page active">
+  <div class="card">
+    <h2>Welcome to Coool Video Editor</h2>
+    <p>Select a video from your phone to start editing.</p>
+    <label for="videoFile">Choose Video File</label>
+    <input id="videoFile" type="file" accept="video/*">
+    <p id="fileInfo" class="note">No video selected</p>
+    <button onclick="openEditor()">Next / Edit Video ➜</button>
+  </div>
+  <div class="card">
+    <h3>Features</h3>
+    <p>🎞️ Video Preview · 🎵 Music · ✨ Effects</p>
+    <p>☀️ Brightness · 🎚️ Contrast · ⏩ Speed</p>
+    <p>🔄 Rotate · 📝 Text · 📥 Export</p>
+  </div>
 </main>
 
-<script type="module">
-import { FFmpeg } from "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
-import { toBlobURL } from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js";
+<!-- PAGE 2 -->
+<main id="editorPage" class="page">
+  <div class="row">
+    <button class="secondary" onclick="goHome()">⬅ Back</button>
+    <button onclick="exportVideo()">⬇ Export / Download</button>
+  </div>
 
-const $=id=>document.getElementById(id);
-let videoURL=null,musicURL=null,outputURL=null,ffmpeg=null;
-let selectedVideo=null,selectedMusic=null;
+  <div class="card">
+    <h2>Video Preview</h2>
+    <div id="videoWrap">
+      <video id="video" controls playsinline></video>
+      <div id="textOverlay"></div>
+    </div>
+    <input id="timeline" type="range" min="0" max="100" value="0">
+    <div class="row">
+      <button onclick="playVideo()">▶ Play</button>
+      <button class="secondary" onclick="pauseVideo()">⏸ Pause</button>
+      <button class="secondary" onclick="resetEdit()">↺ Reset Effects</button>
+    </div>
+    <p id="timeInfo" class="note">00:00 / 00:00</p>
+  </div>
 
-function say(s){$("status").textContent=s}
-function timeText(t){
- if(!Number.isFinite(t))t=0;
- return String(Math.floor(t/60)).padStart(2,"0")+":"+
- String(Math.floor(t%60)).padStart(2,"0");
-}
+  <div class="card">
+    <h3>🎵 Music & Volume</h3>
+    <label>Choose Music</label>
+    <input id="musicFile" type="file" accept="audio/*">
+    <label>Music Volume</label>
+    <input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.7">
+    <label>Video Volume</label>
+    <input id="videoVolume" type="range" min="0" max="1" step="0.05" value="1">
+    <p class="note">Music preview plays separately. This browser demo does not merge music into the exported video.</p>
+  </div>
 
-function setVideo(f){
- if(!f)return;
- selectedVideo=f;
- if(videoURL)URL.revokeObjectURL(videoURL);
- videoURL=URL.createObjectURL(f);
- $("video").src=videoURL;
- $("video").load();
- $("chosenName").textContent="🎬 "+f.name;
- $("videoTrackName").textContent=f.name;
- $("videoClip").textContent="🎬 "+f.name;
- $("next").disabled=false;
- preview();
- say("Video loaded.");
-}
+  <div class="card">
+    <h3>✨ Effects</h3>
+    <label>Brightness</label>
+    <input id="brightness" type="range" min="0.3" max="2" step="0.05" value="1">
+    <label>Contrast</label>
+    <input id="contrast" type="range" min="0.3" max="2" step="0.05" value="1">
+    <label>Saturation</label>
+    <input id="saturation" type="range" min="0" max="2" step="0.05" value="1">
+    <label>Video Speed</label>
+    <select id="speed">
+      <option value="0.25">0.25x</option>
+      <option value="0.5">0.5x</option>
+      <option value="0.75">0.75x</option>
+      <option value="1" selected>1x Normal</option>
+      <option value="1.25">1.25x</option>
+      <option value="1.5">1.5x</option>
+      <option value="2">2x</option>
+    </select>
+    <label>Rotate Video</label>
+    <div class="row">
+      <button onclick="rotate(-90)">↶ Rotate Left</button>
+      <button onclick="rotate(90)">↷ Rotate Right</button>
+    </div>
+    <label>Preview Ratio</label>
+    <select id="ratio">
+      <option value="16/9">16:9 YouTube</option>
+      <option value="9/16">9:16 Shorts / Reels</option>
+      <option value="1/1">1:1 Square</option>
+      <option value="4/3">4:3 Classic</option>
+    </select>
+  </div>
 
-$("videoFile").onchange=()=>setVideo($("videoFile").files[0]);
-$("changeVideo").onchange=()=>{
- const f=$("changeVideo").files[0];
- if(f){setVideo(f);say("Video changed.");}
-};
-$("editVideo").onclick=()=>$("changeVideo").click();
+  <div class="card">
+    <h3>📝 Add Text</h3>
+    <input id="textInput" type="text" placeholder="Type text for your video">
+    <label>Text Size</label>
+    <input id="textSize" type="range" min="14" max="52" value="28">
+    <button onclick="addText()">Add / Update Text</button>
+    <button class="secondary" onclick="clearText()">Remove Text</button>
+  </div>
 
-$("deleteVideo").onclick=()=>{
- selectedVideo=null;
- $("video").pause();
- $("video").removeAttribute("src");
- $("video").load();
- if(videoURL)URL.revokeObjectURL(videoURL);
- videoURL=null;
- $("videoTrackName").textContent="No video selected";
- $("videoClip").textContent="Video deleted";
- $("chosenName").textContent="व्हिडिओ निवडलेला नाही";
- $("next").disabled=true;
- $("seek").value=0;
- $("playtime").textContent="00:00 / 00:00";
- say("Video deleted. Choose another video.");
-};
+  <div class="card">
+    <h3>📥 Export / Download</h3>
+    <p class="note">Download the original video file. The effects shown in preview are not permanently applied by this basic web version.</p>
+    <button onclick="exportVideo()">Download Video</button>
+    <p id="status"></p>
+  </div>
+</main>
 
-$("next").onclick=()=>{
- if(!selectedVideo)return;
- $("home").classList.remove("active");
- $("editor").classList.add("active");
- window.scrollTo(0,0);
-};
+<audio id="music"></audio>
 
-$("back").onclick=()=>{
- $("editor").classList.remove("active");
- $("home").classList.add("active");
- window.scrollTo(0,0);
-};
+<script>
+const $ = id => document.getElementById(id);
+let videoURL = "";
+let musicURL = "";
+let rotation = 0;
 
-const audio=new Audio();
-audio.preload="auto";
-
-$("editMusic").onclick=()=>$("musicFile").click();
-$("musicFile").onchange=()=>{
- const f=$("musicFile").files[0];
- if(!f)return;
- selectedMusic=f;
- if(musicURL)URL.revokeObjectURL(musicURL);
- musicURL=URL.createObjectURL(f);
- audio.src=musicURL;
- $("musicTrackName").textContent=f.name;
- $("musicClip").textContent="🎵 "+f.name;
- audio.volume=Number($("musicVolume").value)/100;
- say("Music added to timeline.");
-};
-
-$("deleteMusic").onclick=()=>{
- selectedMusic=null;
- audio.pause();
- audio.removeAttribute("src");
- audio.load();
- if(musicURL)URL.revokeObjectURL(musicURL);
- musicURL=null;
- $("musicTrackName").textContent="Music not added";
- $("musicClip").textContent="+ Add Music";
- $("musicFile").value="";
- say("Music deleted.");
-};
-
-$("video").addEventListener("play",()=>{
- if(selectedMusic){
-   audio.currentTime=$("video").currentTime||0;
-   audio.play().catch(()=>{});
- }
+$("videoFile").addEventListener("change", () => {
+  const file = $("videoFile").files[0];
+  if (!file) return;
+  if (videoURL) URL.revokeObjectURL(videoURL);
+  videoURL = URL.createObjectURL(file);
+  $("fileInfo").textContent = file.name;
 });
-$("video").addEventListener("pause",()=>audio.pause());
-$("video").addEventListener("seeking",()=>{
- if(selectedMusic && Number.isFinite($("video").currentTime)){
-   try{audio.currentTime=$("video").currentTime;}catch(e){}
- }
-});
-$("video").addEventListener("timeupdate",()=>{
- const v=$("video"),d=v.duration||0;
- $("seek").value=d?Math.round(v.currentTime/d*1000):0;
- $("playtime").textContent=timeText(v.currentTime)+" / "+timeText(d);
-});
-$("seek").oninput=()=>{
- const v=$("video");
- if(v.duration){
-   v.currentTime=(Number($("seek").value)/1000)*v.duration;
-   if(selectedMusic){
-     try{audio.currentTime=v.currentTime;}catch(e){}
-   }
- }
-};
 
-$("musicVolume").oninput=()=>{
- audio.volume=Number($("musicVolume").value)/100;
- $("mvText").textContent=$("musicVolume").value+"%";
-};
-$("originalVolume").oninput=()=>{
- $("video").volume=Number($("originalVolume").value)/100;
- $("ovText").textContent=$("originalVolume").value+"%";
-};
-
-function preview(){
- const v=$("video");
- if(!v)return;
- v.playbackRate=Number($("speed").value)/100;
- $("speedText").textContent=v.playbackRate+"x";
- $("bText").textContent=$("brightness").value;
- $("cText").textContent=$("contrast").value+"%";
-
- const e=$("effect").value;
- const names={
-  "none":"No effect",
-  "grayscale=1":"Black & White",
-  "contrast=1.4:saturation=1.3":"Cinematic",
-  "saturation=2":"Vivid",
-  "brightness=0.1":"Bright",
-  "contrast=1.5":"High Contrast"
- };
- $("effectTrackName").textContent=names[e];
- $("effectClip").textContent=e==="none"?"+ Add Effect":"✨ "+names[e];
-
- let css=[];
- if(e==="grayscale=1")css.push("grayscale(1)");
- if(e==="contrast=1.4:saturation=1.3")css.push("contrast(1.4) saturate(1.3)");
- if(e==="saturation=2")css.push("saturate(2)");
- if(e==="brightness=0.1")css.push("brightness(1.2)");
- if(e==="contrast=1.5")css.push("contrast(1.5)");
- css.push("brightness("+(1+Number($("brightness").value)/100)+")");
- css.push("contrast("+Number($("contrast").value)/100+")");
- v.style.filter=css.join(" ");
- v.style.transform="rotate("+$("rotate").value+"deg)";
- v.style.background=$("bg").value;
- v.parentElement.style.background=$("bg").value;
- const r=$("ratio").value;
- v.style.aspectRatio=r==="original"?"auto":r.replace(":","/");
-}
-["effect","brightness","contrast","speed","bg","ratio","rotate"].forEach(id=>{
- $(id).addEventListener("input",preview);
- $(id).addEventListener("change",preview);
-});
-$("removeEffect").onclick=()=>{
- $("effect").value="none";
- preview();
- say("Effect removed.");
-};
-$("reset").onclick=()=>{
- $("effect").value="none";
- $("brightness").value=0;
- $("contrast").value=100;
- $("speed").value=100;
- $("bg").value="#101116";
- $("ratio").value="original";
- $("rotate").value=0;
- preview();
- say("Preview reset.");
-};
-
-async function getFFmpeg(){
- if(ffmpeg)return;
- ffmpeg=new FFmpeg();
- ffmpeg.on("progress",({progress})=>say("Export: "+Math.round(progress*100)+"%"));
- const base="https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
- await ffmpeg.load({
-  coreURL:await toBlobURL(base+"/ffmpeg-core.js","text/javascript"),
-  wasmURL:await toBlobURL(base+"/ffmpeg-core.wasm","application/wasm")
- });
-}
-
-$("export").onclick=async()=>{
- if(!selectedVideo){say("आधी Video निवड.");return;}
- $("export").disabled=true;
- $("download").disabled=true;
-
- try{
-  say("FFmpeg loading...");
-  await getFFmpeg();
-  await ffmpeg.writeFile("input",new Uint8Array(await selectedVideo.arrayBuffer()));
-
-  const args=["-i","input"];
-  const hasMusic=!!selectedMusic;
-  if(hasMusic){
-   await ffmpeg.writeFile("music",new Uint8Array(await selectedMusic.arrayBuffer()));
-   args.push("-i","music");
+function openEditor() {
+  const file = $("videoFile").files[0];
+  if (!file) {
+    alert("Bhau, pahile video select kar!");
+    return;
   }
+  $("homePage").classList.remove("active");
+  $("editorPage").classList.add("active");
+  $("video").src = videoURL;
+  $("video").load();
+  window.scrollTo(0,0);
+}
 
-  const filters=[];
-  const rot=Number($("rotate").value);
-  if(rot===90)filters.push("transpose=1");
-  if(rot===270)filters.push("transpose=2");
-  if(rot===180)filters.push("hflip","vflip");
+function goHome() {
+  pauseVideo();
+  $("editorPage").classList.remove("active");
+  $("homePage").classList.add("active");
+  window.scrollTo(0,0);
+}
 
-  const r=$("ratio").value;
-  let w=1280,h=720;
-  if(r==="9:16"){w=720;h=1280;}
-  if(r==="1:1"){w=720;h=720;}
-  filters.push(`scale=${w}:${h}:force_original_aspect_ratio=decrease`);
-  const col=$("bg").value.replace("#","0x");
-  filters.push(`pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2:${col}`);
+function playVideo() {
+  $("video").play().catch(() => {
+    $("status").textContent = "Play करण्यासाठी पुन्हा बटण दाब.";
+  });
+}
+function pauseVideo() {
+  $("video").pause();
+}
 
-  const e=$("effect").value;
-  if(e==="grayscale=1")filters.push("hue=s=0");
-  if(e==="contrast=1.4:saturation=1.3")filters.push("eq=contrast=1.4:saturation=1.3");
-  if(e==="saturation=2")filters.push("eq=saturation=2");
-  if(e==="brightness=0.1")filters.push("eq=brightness=0.1");
-  if(e==="contrast=1.5")filters.push("eq=contrast=1.5");
+$("video").addEventListener("loadedmetadata", () => {
+  $("timeInfo").textContent = fmt(0) + " / " + fmt($("video").duration);
+});
+$("video").addEventListener("timeupdate", () => {
+  const v = $("video");
+  if (v.duration) $("timeline").value = v.currentTime / v.duration * 100;
+  $("timeInfo").textContent = fmt(v.currentTime) + " / " + fmt(v.duration);
+});
+$("timeline").addEventListener("input", () => {
+  const v = $("video");
+  if (v.duration) v.currentTime = Number($("timeline").value) / 100 * v.duration;
+});
+function fmt(seconds) {
+  if (!Number.isFinite(seconds)) return "00:00";
+  const s = Math.floor(seconds);
+  return String(Math.floor(s/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0");
+}
 
-  const b=Number($("brightness").value)/100;
-  const c=Number($("contrast").value)/100;
-  if(b!==0||c!==1)filters.push(`eq=brightness=${b}:contrast=${c}`);
+function updateEffects() {
+  $("video").style.filter =
+    `brightness(${$("brightness").value}) ` +
+    `contrast(${$("contrast").value}) ` +
+    `saturate(${$("saturation").value})`;
+  $("video").playbackRate = Number($("speed").value);
+  $("video").style.transform = `rotate(${rotation}deg)`;
+}
+["brightness","contrast","saturation","speed"].forEach(id =>
+  $(id).addEventListener("input", updateEffects)
+);
 
-  const speed=Number($("speed").value)/100;
-  if(speed!==1)filters.push(`setpts=${(1/speed).toFixed(3)}*PTS`);
+function rotate(amount) {
+  rotation = (rotation + amount) % 360;
+  updateEffects();
+}
+$("ratio").addEventListener("change", () => {
+  $("videoWrap").style.aspectRatio = $("ratio").value;
+  $("video").style.height = "100%";
+  $("video").style.objectFit = "contain";
+});
 
-  args.push("-vf",filters.join(","));
+$("musicFile").addEventListener("change", () => {
+  const file = $("musicFile").files[0];
+  if (!file) return;
+  if (musicURL) URL.revokeObjectURL(musicURL);
+  musicURL = URL.createObjectURL(file);
+  $("music").src = musicURL;
+  $("music").load();
+  $("status").textContent = "Music loaded. Press Play on the music controls via your phone's audio playback.";
+});
+$("musicVolume").addEventListener("input", () => {
+  $("music").volume = Number($("musicVolume").value);
+});
+$("videoVolume").addEventListener("input", () => {
+  $("video").volume = Number($("videoVolume").value);
+});
 
-  if(hasMusic){
-   const mv=Number($("musicVolume").value)/100;
-   // Music is exported as the audio track.
-   args.push("-map","0:v:0","-map","1:a:0");
-   args.push("-af",`volume=${mv}`);
-  }else{
-   args.push("-map","0:v:0","-map","0:a?");
-   const af=[`volume=${Number($("originalVolume").value)/100}`];
-   if(speed!==1)af.push(`atempo=${speed}`);
-   args.push("-af",af.join(","));
-  }
+function addText() {
+  $("textOverlay").textContent = $("textInput").value;
+  $("textOverlay").style.fontSize = $("textSize").value + "px";
+}
+function clearText() {
+  $("textOverlay").textContent = "";
+  $("textInput").value = "";
+}
+$("textSize").addEventListener("input", addText);
 
-  args.push("-c:v","libx264","-preset","ultrafast","-pix_fmt","yuv420p",
-   "-c:a","aac","-shortest","-y","output.mp4");
+function resetEdit() {
+  $("brightness").value = 1;
+  $("contrast").value = 1;
+  $("saturation").value = 1;
+  $("speed").value = 1;
+  rotation = 0;
+  updateEffects();
+  clearText();
+}
 
-  say("Exporting video...");
-  await ffmpeg.exec(args);
-  const data=await ffmpeg.readFile("output.mp4");
-  if(outputURL)URL.revokeObjectURL(outputURL);
-  outputURL=URL.createObjectURL(new Blob([data.buffer],{type:"video/mp4"}));
-  $("download").disabled=false;
-  say("Export complete! Download MP4 दाब.");
- }catch(err){
-  console.error(err);
-  say("Export अयशस्वी. इंटरनेट तपासून पुन्हा प्रयत्न कर.");
- }finally{
-  $("export").disabled=false;
- }
-};
-
-$("download").onclick=()=>{
- if(!outputURL)return;
- const a=document.createElement("a");
- a.href=outputURL;
- a.download="coool-edited.mp4";
- a.click();
-};
+function exportVideo() {
+  const file = $("videoFile").files[0];
+  if (!file) return;
+  const a = document.createElement("a");
+  a.href = videoURL;
+  a.download = file.name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  $("status").textContent =
+    "Original video downloaded. Preview effects/text/music are not baked into this file yet.";
+}
 </script>
 </body>
 </html>
