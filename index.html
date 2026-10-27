@@ -5,150 +5,288 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Coool Video Editor</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101116;color:white;font-family:Arial,sans-serif}
-header{text-align:center;padding:18px;background:#20202c}
-h1{color:#b9a2ff;margin:0}
+body{
+  margin:0;background:#101116;color:white;
+  font-family:Arial,sans-serif
+}
+header{
+  text-align:center;padding:22px 12px;
+  background:#20202c
+}
+h1{color:#b9a2ff;margin:0;font-size:26px}
+header p{color:#ccc;margin-bottom:0}
 main{max-width:850px;margin:auto;padding:14px}
-.panel{background:#20212d;padding:14px;margin:12px 0;border-radius:13px}
+.page{display:none}
+.page.active{display:block}
+.panel{
+  background:#20212d;padding:14px;
+  margin:12px 0;border-radius:13px
+}
 h3{color:#c4b5fd;margin-top:0}
 label{display:block;margin:12px 0 6px}
 input,select,button{max-width:100%;font-size:15px}
-input[type=file],input[type=range],select{width:100%;margin-top:7px}
-select,button{background:#353548;color:white;border:0;padding:12px;border-radius:8px}
+input[type=file],input[type=range],select{
+  width:100%;margin-top:7px
+}
+input[type=file]{
+  background:#353548;padding:10px;border-radius:8px
+}
+select,button{
+  background:#353548;color:white;border:0;
+  padding:12px;border-radius:8px
+}
 button{background:#7354e8;cursor:pointer}
-video{width:100%;max-height:55vh;background:#000;border-radius:10px}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button:disabled{opacity:.5;cursor:not-allowed}
+video{
+  width:100%;max-height:55vh;
+  background:#000;border-radius:10px
+}
+.actions{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px
+}
 #export{background:#099b70}
+#nextPage{width:100%;margin-top:16px;font-size:17px}
+#backPage{margin-bottom:10px}
+#download{background:#246dbe}
 small{color:#bbb}
 #status{color:#c4b5fd;overflow-wrap:anywhere}
+.hero{
+  min-height:65vh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  background:linear-gradient(150deg,#20202c,#11111a);
+  border-radius:18px;padding:24px
+}
+.logo{font-size:64px;margin-bottom:12px}
+.hero h2{font-size:29px;color:#b9a2ff;margin:0 0 10px}
+.hero p{color:#bbb}
+.choose{
+  display:block;background:#7354e8;padding:16px 24px;
+  border-radius:10px;font-size:17px;font-weight:bold;
+  margin-top:18px;cursor:pointer
+}
+#videoFile{display:none}
+#fileName{overflow-wrap:anywhere;color:#c4b5fd}
+@media(max-width:400px){
+  h1{font-size:22px}
+  .actions{grid-template-columns:1fr}
+}
 </style>
 </head>
+
 <body>
+
 <header>
-<h1>🎬 Coool Video Editor</h1>
-<p>Video • Music • Effects • Export MP4</p>
+  <h1>🎬 Coool Video Editor</h1>
+  <p>Video • Music • Effects • Export MP4</p>
 </header>
+
 <main>
-<section class="panel">
-<h3>📂 Upload Video</h3>
-<input id="videoFile" type="file" accept="video/*">
+
+<!-- PAGE 1 -->
+<section id="page1" class="page active">
+  <div class="hero">
+    <div class="logo">🎬</div>
+    <h2>Coool Video Editor</h2>
+    <p>Your videos. Your creativity.</p>
+
+    <label for="videoFile" class="choose">
+      📂 Choose Video File
+    </label>
+
+    <input id="videoFile" type="file" accept="video/*">
+
+    <p id="fileName">व्हिडिओ निवडलेला नाही</p>
+
+    <button id="nextPage" disabled>Next / Edit Video ➜</button>
+  </div>
 </section>
 
-<section class="panel">
-<h3>🎥 Video Preview</h3>
-<video id="video" controls playsinline></video>
-</section>
+<!-- PAGE 2 -->
+<section id="page2" class="page">
 
-<section class="panel">
-<h3>🎵 Add Music</h3>
-<label>मोबाईलमधून गाणं निवड</label>
-<input id="musicFile" type="file" accept="audio/*">
-<p id="musicName"><small>गाणं निवडलेलं नाही</small></p>
-<label>Music Volume</label>
-<input id="musicVolume" type="range" min="0" max="100" value="70">
-<label>Original Video Sound</label>
-<input id="originalVolume" type="range" min="0" max="100" value="100">
-</section>
+  <button id="backPage">⬅ Back to Home</button>
 
-<section class="panel">
-<h3>🎨 Effects</h3>
-<select id="effect">
-<option value="none">Original</option>
-<option value="grayscale=1">Black & White</option>
-<option value="contrast=1.4:saturation=1.3">Cinematic</option>
-<option value="saturation=2">Vivid</option>
-<option value="brightness=0.1">Bright</option>
-<option value="contrast=1.5">High Contrast</option>
-</select>
-<label>Brightness</label>
-<input id="brightness" type="range" min="-50" max="50" value="0">
-<label>Contrast</label>
-<input id="contrast" type="range" min="50" max="200" value="100">
-</section>
+  <section class="panel">
+    <h3>📂 Change Video</h3>
+    <input id="videoFile2" type="file" accept="video/*">
+  </section>
 
-<section class="panel">
-<h3>⚡ Speed</h3>
-<label>Speed: <span id="speedText">1x</span></label>
-<input id="speed" type="range" min="25" max="200" step="25" value="100">
-</section>
+  <section class="panel">
+    <h3>🎥 Video Preview</h3>
+    <video id="video" controls playsinline></video>
+  </section>
 
-<section class="panel">
-<h3>🖼️ Background & Crop</h3>
-<label>Background colour (Preview)</label>
-<input id="bg" type="color" value="#101116">
-<label>Video ratio</label>
-<select id="ratio">
-<option value="original">Original</option>
-<option value="16:9">16:9 YouTube</option>
-<option value="9:16">9:16 Shorts/Reels</option>
-<option value="1:1">1:1 Square</option>
-</select>
-<label>Rotate</label>
-<select id="rotate">
-<option value="0">0°</option>
-<option value="90">90°</option>
-<option value="180">180°</option>
-<option value="270">270°</option>
-</select>
-</section>
+  <section class="panel">
+    <h3>🎵 Add Music</h3>
+    <label>मोबाईलमधून गाणं निवड</label>
+    <input id="musicFile" type="file" accept="audio/*">
+    <p id="musicName"><small>गाणं निवडलेलं नाही</small></p>
 
-<section class="panel actions">
-<button id="reset">Reset Preview</button>
-<button id="export">📤 Export MP4</button>
-<button id="download" disabled>⬇ Download MP4</button>
+    <label>Music Volume</label>
+    <input id="musicVolume" type="range" min="0" max="100" value="70">
+
+    <label>Original Video Sound</label>
+    <input id="originalVolume" type="range" min="0" max="100" value="100">
+  </section>
+
+  <section class="panel">
+    <h3>🎨 Effects</h3>
+    <label>Video Effect</label>
+    <select id="effect">
+      <option value="none">Original</option>
+      <option value="grayscale=1">Black & White</option>
+      <option value="contrast=1.4:saturation=1.3">Cinematic</option>
+      <option value="saturation=2">Vivid</option>
+      <option value="brightness=0.1">Bright</option>
+      <option value="contrast=1.5">High Contrast</option>
+    </select>
+
+    <label>Brightness</label>
+    <input id="brightness" type="range" min="-50" max="50" value="0">
+
+    <label>Contrast</label>
+    <input id="contrast" type="range" min="50" max="200" value="100">
+  </section>
+
+  <section class="panel">
+    <h3>⚡ Speed</h3>
+    <label>Speed: <span id="speedText">1x</span></label>
+    <input id="speed" type="range" min="25" max="200" step="25" value="100">
+  </section>
+
+  <section class="panel">
+    <h3>🖼️ Background & Crop</h3>
+
+    <label>Background Colour</label>
+    <input id="bg" type="color" value="#101116">
+
+    <label>Video Ratio</label>
+    <select id="ratio">
+      <option value="original">Original</option>
+      <option value="16:9">16:9 YouTube</option>
+      <option value="9:16">9:16 Shorts/Reels</option>
+      <option value="1:1">1:1 Square</option>
+    </select>
+
+    <label>Rotate</label>
+    <select id="rotate">
+      <option value="0">0°</option>
+      <option value="90">90°</option>
+      <option value="180">180°</option>
+      <option value="270">270°</option>
+    </select>
+  </section>
+
+  <section class="panel actions">
+    <button id="reset">Reset Preview</button>
+    <button id="export">📤 Export MP4</button>
+    <button id="download" disabled>⬇ Download MP4</button>
+  </section>
+
+  <p id="status">व्हिडिओ निवडून सुरुवात कर.</p>
+  <small>Export साठी इंटरनेट आणि पुरेशी मोबाईल मेमरी आवश्यक आहे.</small>
+
 </section>
-<p id="status">व्हिडिओ निवडून सुरुवात कर.</p>
-<small>Export साठी इंटरनेट आणि पुरेशी मोबाईल मेमरी आवश्यक आहे.</small>
 </main>
 
 <script type="module">
-import { FFmpeg } from "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
-import { toBlobURL } from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js";
+import { FFmpeg } from
+"https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
+import { toBlobURL } from
+"https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js";
 
 const $ = id => document.getElementById(id);
-let videoURL = null, music = null, outputURL = null, ffmpeg = null;
+
+let videoURL=null, music=null, outputURL=null, ffmpeg=null;
 
 function say(s){$("status").textContent=s;}
+
+function useVideo(file){
+  if(!file)return;
+
+  if(videoURL)URL.revokeObjectURL(videoURL);
+
+  videoURL=URL.createObjectURL(file);
+  $("video").src=videoURL;
+  $("video").load();
+
+  $("videoFile").files.length || ($("fileName").textContent=file.name);
+  $("nextPage").disabled=false;
+  preview();
+}
 
 $("videoFile").addEventListener("change",()=>{
   const f=$("videoFile").files[0];
   if(!f)return;
-  if(videoURL)URL.revokeObjectURL(videoURL);
-  videoURL=URL.createObjectURL(f);
-  $("video").src=videoURL;
-  $("video").load();
-  preview();
-  say("व्हिडिओ लोड झाला.");
+  $("fileName").textContent="🎬 "+f.name;
+  useVideo(f);
 });
+
+$("videoFile2").addEventListener("change",()=>{
+  const f=$("videoFile2").files[0];
+  if(!f)return;
+  useVideo(f);
+  say("नवीन व्हिडिओ लोड झाला.");
+});
+
+$("nextPage").onclick=()=>{
+  if(!$("video").src){
+    alert("आधी व्हिडिओ निवड.");
+    return;
+  }
+  $("page1").classList.remove("active");
+  $("page2").classList.add("active");
+  window.scrollTo(0,0);
+};
+
+$("backPage").onclick=()=>{
+  $("page2").classList.remove("active");
+  $("page1").classList.add("active");
+  window.scrollTo(0,0);
+};
 
 $("musicFile").addEventListener("change",()=>{
   music=$("musicFile").files[0]||null;
-  $("musicName").textContent=music?"🎵 "+music.name:"गाणं निवडलेलं नाही";
+  $("musicName").textContent=music
+    ?"🎵 "+music.name
+    :"गाणं निवडलेलं नाही";
 });
 
 function preview(){
   const v=$("video");
   v.playbackRate=Number($("speed").value)/100;
   $("speedText").textContent=v.playbackRate+"x";
+
   const e=$("effect").value;
   let filters=[];
+
   if(e==="grayscale=1")filters.push("grayscale(1)");
-  if(e==="contrast=1.4:saturation=1.3")filters.push("contrast(1.4) saturate(1.3)");
+  if(e==="contrast=1.4:saturation=1.3")
+    filters.push("contrast(1.4) saturate(1.3)");
   if(e==="saturation=2")filters.push("saturate(2)");
   if(e==="brightness=0.1")filters.push("brightness(1.2)");
   if(e==="contrast=1.5")filters.push("contrast(1.5)");
-  filters.push("brightness("+ (1+Number($("brightness").value)/100)+")");
-  filters.push("contrast("+Number($("contrast").value)/100+")");
+
+  filters.push("brightness("+
+    (1+Number($("brightness").value)/100)+")");
+  filters.push("contrast("+
+    Number($("contrast").value)/100+")");
+
   v.style.filter=filters.join(" ");
   v.style.transform="rotate("+$("rotate").value+"deg)";
   v.style.background=$("bg").value;
-  $("video").parentElement.style.background=$("bg").value;
+  v.style.objectFit="contain";
+
   const r=$("ratio").value;
-  $("video").style.aspectRatio=r==="original"?"auto":r.replace(":","/");
+  v.style.aspectRatio=r==="original"?"auto":r.replace(":","/");
+  v.parentElement.style.background=$("bg").value;
 }
-["effect","brightness","contrast","speed","bg","ratio","rotate"].forEach(id=>{
+
+["effect","brightness","contrast","speed","bg","ratio","rotate"]
+.forEach(id=>{
   $(id).addEventListener("input",preview);
   $(id).addEventListener("change",preview);
 });
@@ -167,9 +305,15 @@ $("reset").onclick=()=>{
 
 async function getFFmpeg(){
   if(ffmpeg)return;
+
   ffmpeg=new FFmpeg();
-  ffmpeg.on("progress",({progress})=>say("Export: "+Math.round(progress*100)+"%"));
-  const base="https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
+  ffmpeg.on("progress",({progress})=>{
+    say("Export: "+Math.round(progress*100)+"%");
+  });
+
+  const base=
+    "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
+
   await ffmpeg.load({
     coreURL:await toBlobURL(base+"/ffmpeg-core.js","text/javascript"),
     wasmURL:await toBlobURL(base+"/ffmpeg-core.wasm","application/wasm")
@@ -177,73 +321,115 @@ async function getFFmpeg(){
 }
 
 $("export").onclick=async()=>{
-  const f=$("videoFile").files[0];
-  if(!f){say("आधी व्हिडिओ निवड.");return;}
+  const f=$("videoFile2").files[0]||$("videoFile").files[0];
+
+  if(!f){
+    say("आधी व्हिडिओ निवड.");
+    return;
+  }
+
   $("export").disabled=true;
+  $("download").disabled=true;
+
   try{
     say("FFmpeg लोड होत आहे...");
     await getFFmpeg();
+
     await ffmpeg.writeFile("input",new Uint8Array(await f.arrayBuffer()));
+
     const args=["-i","input"];
-    let musicAdded=!!music;
+    const musicAdded=!!music;
+
     if(musicAdded){
-      await ffmpeg.writeFile("music",new Uint8Array(await music.arrayBuffer()));
+      await ffmpeg.writeFile(
+        "music",new Uint8Array(await music.arrayBuffer())
+      );
       args.push("-i","music");
     }
 
     const filters=[];
     const rot=Number($("rotate").value);
+
     if(rot===90)filters.push("transpose=1");
     if(rot===270)filters.push("transpose=2");
     if(rot===180)filters.push("hflip","vflip");
 
     const r=$("ratio").value;
     let w=1280,h=720;
+
     if(r==="9:16"){w=720;h=1280;}
     if(r==="1:1"){w=720;h=720;}
-    filters.push(`scale=${w}:${h}:force_original_aspect_ratio=decrease`);
-    filters.push(`pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2:${$("bg").value}`);
+
+    filters.push(
+      `scale=${w}:${h}:force_original_aspect_ratio=decrease`
+    );
+
+    const color=$("bg").value.replace("#","0x");
+    filters.push(`pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2:${color}`);
 
     const e=$("effect").value;
+
     if(e==="grayscale=1")filters.push("hue=s=0");
-    if(e==="contrast=1.4:saturation=1.3")filters.push("eq=contrast=1.4:saturation=1.3");
+    if(e==="contrast=1.4:saturation=1.3")
+      filters.push("eq=contrast=1.4:saturation=1.3");
     if(e==="saturation=2")filters.push("eq=saturation=2");
     if(e==="brightness=0.1")filters.push("eq=brightness=0.1");
     if(e==="contrast=1.5")filters.push("eq=contrast=1.5");
 
     const b=Number($("brightness").value)/100;
     const c=Number($("contrast").value)/100;
-    if(b!==0||c!==1)filters.push(`eq=brightness=${b}:contrast=${c}`);
+
+    if(b!==0||c!==1)
+      filters.push(`eq=brightness=${b}:contrast=${c}`);
 
     const speed=Number($("speed").value)/100;
-    if(speed!==1)filters.push(`setpts=${(1/speed).toFixed(3)}*PTS`);
+    if(speed!==1)
+      filters.push(`setpts=${(1/speed).toFixed(3)}*PTS`);
 
     args.push("-vf",filters.join(","));
     args.push("-map","0:v:0");
 
     if(musicAdded){
-      args.push("-map","1:a:0");
       const vol=Number($("musicVolume").value)/100;
       const original=Number($("originalVolume").value)/100;
-      args.push("-filter_complex",
-        `[1:a]volume=${vol}[m];[0:a]volume=${original}[o];[o][m]amix=inputs=2:duration=first:dropout_transition=2[a]`,
-        "-map","0:v:0","-map","[a]");
+
+      // Music mix requires an audio stream in the original video.
+      args.push(
+        "-filter_complex",
+        `[0:a]volume=${original},atempo=${speed}[o];`+
+        `[1:a]volume=${vol}[m];`+
+        `[o][m]amix=inputs=2:duration=first:dropout_transition=2[a]`,
+        "-map","[a]"
+      );
     }else{
       args.push("-map","0:a?");
-      args.push("-af",`volume=${Number($("originalVolume").value)/100}`);
+      const audioFilters=[
+        `volume=${Number($("originalVolume").value)/100}`
+      ];
+      if(speed!==1)audioFilters.push(`atempo=${speed}`);
+      args.push("-af",audioFilters.join(","));
     }
 
-    if(speed!==1){
-      args.push("-af",`atempo=${speed}`);
-    }
-    args.push("-c:v","libx264","-preset","ultrafast","-pix_fmt","yuv420p",
-      "-c:a","aac","-shortest","-y","output.mp4");
+    args.push(
+      "-c:v","libx264",
+      "-preset","ultrafast",
+      "-pix_fmt","yuv420p",
+      "-c:a","aac",
+      "-shortest",
+      "-y","output.mp4"
+    );
 
     say("व्हिडिओ Export होत आहे...");
     await ffmpeg.exec(args);
+
     const data=await ffmpeg.readFile("output.mp4");
+
     if(outputURL)URL.revokeObjectURL(outputURL);
-    outputURL=URL.createObjectURL(new Blob([data.buffer],{type:"video/mp4"}));
+
+    outputURL=URL.createObjectURL(
+      new Blob([data.buffer],{type:"video/mp4"})
+    );
+
     $("download").disabled=false;
     say("Export पूर्ण! Download MP4 दाब.");
   }catch(err){
@@ -256,11 +442,13 @@ $("export").onclick=async()=>{
 
 $("download").onclick=()=>{
   if(!outputURL)return;
+
   const a=document.createElement("a");
   a.href=outputURL;
   a.download="coool-edited.mp4";
   a.click();
 };
 </script>
+
 </body>
 </html>
