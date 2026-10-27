@@ -1,299 +1,346 @@
-<!DOCTYPE html><html lang="mr">
+
+<!DOCTYPE html>
+<html lang="mr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Coool Video Editor</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:16px;background:#101018;color:white;font-family:Arial,sans-serif}
-h1{text-align:center;color:#a78bfa;font-size:28px}
-p{text-align:center;color:#bbb;overflow-wrap:anywhere}
-.card{background:#20202c;padding:16px;border-radius:16px;margin:16px 0}
-label{display:block;margin:12px 0;color:#ddd}
-input,button{width:100%;padding:13px;margin:7px 0;border-radius:10px;font-size:16px}
-input{background:#30303d;color:white;border:1px solid #555}
+body{margin:0;padding:14px;background:#101018;color:#fff;font-family:Arial,sans-serif}
+h1{text-align:center;color:#a78bfa}
+p{color:#ccc;overflow-wrap:anywhere}
+.card{background:#20202c;padding:15px;border-radius:15px;margin:14px 0}
+label{display:block;margin:12px 0 5px;color:#ddd}
+input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:9px;font-size:15px}
+input,select{background:#30303d;color:white;border:1px solid #555}
+input[type=range]{padding:0;accent-color:#a78bfa}
 button{background:#8b5cf6;color:white;border:0;font-weight:bold}
-button:disabled{opacity:.45}
-video{width:100%;max-height:350px;background:#000;border-radius:12px}
-.row{display:flex;gap:10px}
+button:disabled{opacity:.4}
+video{width:100%;max-height:350px;background:#000;border-radius:10px}
+.row{display:flex;gap:8px}
 .row>div{flex:1;min-width:0}
-#status{color:#c4b5fd;overflow-wrap:anywhere}
-.small{font-size:13px;color:#aaa}
+#status{color:#c4b5fd}
+.small{font-size:12px;color:#aaa}
 </style>
 </head>
 <body>
 <h1>🎬 Coool Video Editor</h1>
-<p>व्हिडिओचा हवा तो भाग निवडा आणि MP4 डाउनलोड करा.</p><div class="card">
-<label for="file">📁 मोबाईलमधून व्हिडिओ निवडा</label>
+<p style="text-align:center">Edit • Effects • Speed • MP4 Export</p>
+
+<div class="card">
+<h3>📁 Video Import</h3>
 <input type="file" id="file" accept="video/*">
 <video id="video" controls playsinline></video>
 <p id="duration">व्हिडिओ निवडा.</p>
-</div><div class="card">
-<h2>✂️ व्हिडिओचा भाग निवडा</h2>
-<div class="row">
-<div>
-<label for="start">सुरुवात (सेकंद)</label>
-<input id="start" type="number" min="0" value="0" step="0.1">
-<button id="setStart" disabled>सध्याची वेळ सुरुवात ठेवा</button>
 </div>
-<div>
-<label for="end">शेवट (सेकंद)</label>
-<input id="end" type="number" min="0" value="0" step="0.1">
-<button id="setEnd" disabled>सध्याची वेळ शेवट ठेवा</button>
+
+<div class="card">
+<h3>✂️ Trim Video</h3>
+<div class="row"><div>
+<label>Start (सेकंद)</label>
+<input id="start" type="number" min="0" value="0" step=".1">
+<button id="setStart" disabled>Current Time Start</button>
+</div><div>
+<label>End (सेकंद)</label>
+<input id="end" type="number" min="0" value="0" step=".1">
+<button id="setEnd" disabled>Current Time End</button>
+</div></div>
 </div>
+
+<div class="card">
+<h3>📐 Crop / Ratio</h3>
+<label>Aspect Ratio</label>
+<select id="ratio">
+<option value="original">Original</option>
+<option value="16:9">16:9 YouTube</option>
+<option value="9:16">9:16 Reels / Shorts</option>
+<option value="1:1">1:1 Square</option>
+<option value="4:5">4:5 Portrait</option>
+</select>
+<label>Background Color</label>
+<select id="bg">
+<option value="black">Black</option>
+<option value="white">White</option>
+<option value="purple">Purple</option>
+<option value="blue">Blue</option>
+</select>
 </div>
-<button id="preview" disabled>▶️ निवडलेला भाग पाहा</button>
-<button id="export" disabled>⬇️ MP4 तयार करून डाउनलोड करा</button>
-<p id="status">सुरू करण्यासाठी व्हिडिओ निवडा.</p>
-<p class="small">पहिल्या वेळी FFmpeg डाउनलोड होण्यासाठी वेळ लागू शकतो. पेज बंद करू नका.</p>
-</div><script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script><script>
-const $ = id => document.getElementById(id);
-const fileInput = $('file');
-const video = $('video');
-const startInput = $('start');
-const endInput = $('end');
-const status = $('status');
-const durationText = $('duration');
-const previewBtn = $('preview');
-const exportBtn = $('export');
-const setStartBtn = $('setStart');
-const setEndBtn = $('setEnd');
 
-let selectedFile = null;
-let videoURL = null;
-let ffmpeg = null;
-let loadingPromise = null;
-let busy = false;
+<div class="card">
+<h3>⚡ Speed & Rotation</h3>
+<label>Speed</label>
+<select id="speed">
+<option value=".25">0.25x Slow Motion</option>
+<option value=".5">0.5x Slow</option>
+<option value=".75">0.75x</option>
+<option value="1" selected>1x Normal</option>
+<option value="1.5">1.5x Fast</option>
+<option value="2">2x Fast</option>
+<option value="4">4x Fast</option>
+</select>
+<label>Rotation</label>
+<select id="rotation">
+<option value="0">Original</option>
+<option value="1">90°</option>
+<option value="2">180°</option>
+<option value="3">270°</option>
+</select>
+</div>
 
-function say(message) {
-  status.textContent = message;
+<div class="card">
+<h3>🎨 Effects & Filters</h3>
+<label>Filter</label>
+<select id="filter">
+<option value="none">Original</option>
+<option value="gray">Black & White</option>
+<option value="warm">Warm Cinematic</option>
+<option value="cool">Cool Cinematic</option>
+<option value="vintage">Vintage</option>
+<option value="invert">Invert</option>
+</select>
+<label>Brightness</label>
+<input id="brightness" type="range" min="-.5" max=".5" step=".05" value="0">
+<label>Contrast</label>
+<input id="contrast" type="range" min=".5" max="2" step=".1" value="1">
+<label>Saturation</label>
+<input id="saturation" type="range" min="0" max="2" step=".1" value="1">
+<label>Preview Background</label>
+<input id="previewBg" type="color" value="#000000">
+<button id="reset">↩️ Reset Effects</button>
+</div>
+
+<div class="card">
+<h3>🔊 Audio</h3>
+<label>Volume</label>
+<input id="volume" type="range" min="0" max="2" step=".1" value="1">
+<label><input id="mute" type="checkbox" style="width:auto"> Mute Original Audio</label>
+</div>
+
+<div class="card">
+<h3>📤 Export Settings</h3>
+<label>Resolution</label>
+<select id="resolution">
+<option value="720">720p HD</option>
+<option value="1080" selected>1080p Full HD</option>
+</select>
+<label>FPS</label>
+<select id="fps">
+<option value="24">24 FPS</option>
+<option value="30" selected>30 FPS</option>
+<option value="60">60 FPS</option>
+</select>
+<button id="preview" disabled>▶️ Preview Selected Part</button>
+<button id="export" disabled>⬇️ Export MP4</button>
+<p id="status">व्हिडिओ निवडा.</p>
+<p class="small">FFmpeg WebAssembly साठी इंटरनेट आवश्यक आहे. मोठे व्हिडिओ मोबाइलची RAM वापरू शकतात.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const video=$('video');
+let selectedFile=null,videoURL=null,ffmpeg=null,loading=null,busy=false;
+
+function say(s){$('status').textContent=s}
+
+function validRange(){
+ const s=Number($('start').value),e=Number($('end').value);
+ return !!selectedFile && Number.isFinite(video.duration) &&
+ s>=0 && e>s && e<=video.duration;
 }
 
-function validRange() {
-  const s = Number(startInput.value);
-  const e = Number(endInput.value);
-  return !!selectedFile &&
-    Number.isFinite(video.duration) &&
-    Number.isFinite(s) && Number.isFinite(e) &&
-    s >= 0 && e > s && e <= video.duration;
+function updateButtons(){
+ const ready=!!selectedFile&&Number.isFinite(video.duration)&&video.duration>0;
+ $('preview').disabled=busy||!validRange();
+ $('export').disabled=busy||!validRange();
+ $('setStart').disabled=busy||!ready;
+ $('setEnd').disabled=busy||!ready;
 }
 
-function updateButtons() {
-  const ready = !!selectedFile &&
-    Number.isFinite(video.duration) && video.duration > 0;
-  previewBtn.disabled = busy || !validRange();
-  exportBtn.disabled = busy || !validRange();
-  setStartBtn.disabled = busy || !ready;
-  setEndBtn.disabled = busy || !ready;
+$('file').addEventListener('change',()=>{
+ const f=$('file').files[0];if(!f)return;
+ if(!f.type.startsWith('video/')){say('Video file निवडा.');return}
+ selectedFile=f;
+ if(videoURL)URL.revokeObjectURL(videoURL);
+ videoURL=URL.createObjectURL(f);
+ video.src=videoURL;video.load();say('Video loading...');
+});
+
+video.addEventListener('loadedmetadata',()=>{
+ $('start').value=0;
+ $('end').value=video.duration.toFixed(2);
+ $('duration').textContent='Duration: '+video.duration.toFixed(2)+' seconds';
+ say('Video ready!');updateButtons();
+});
+
+['start','end'].forEach(id=>$(id).addEventListener('input',updateButtons));
+$('setStart').onclick=()=>{$('start').value=video.currentTime.toFixed(2);updateButtons()};
+$('setEnd').onclick=()=>{$('end').value=video.currentTime.toFixed(2);updateButtons()};
+
+$('preview').onclick=async()=>{
+ if(!validRange())return;
+ video.currentTime=Number($('start').value);
+ try{await video.play();say('Preview सुरू आहे.')}
+ catch(e){say('Preview सुरू झाला नाही.')}
+};
+
+video.addEventListener('timeupdate',()=>{
+ if(validRange()&&video.currentTime>=Number($('end').value)&&!video.paused)video.pause();
+});
+
+function previewStyle(){
+ const filters={
+  none:'',
+  gray:'grayscale(1)',
+  warm:'sepia(.35) saturate(1.25)',
+  cool:'hue-rotate(15deg) saturate(.85)',
+  vintage:'sepia(.5) contrast(.9)',
+  invert:'invert(1)'
+ };
+ video.style.filter=
+  `brightness(${1+Number($('brightness').value)}) `+
+  `contrast($('contrast').value) saturate($('saturation').value) `+
+  (filters[$('filter').value]||'');
+ video.style.background=$('previewBg').value;
+ video.style.transform=`rotate(${Number($('rotation').value)*90}deg)`;
+ video.style.objectFit=$('ratio').value==='original'?'contain':'cover';
 }
 
-fileInput.addEventListener('change', () => {
-  const f = fileInput.files && fileInput.files[0];
-  if (!f) return;
+['filter','brightness','contrast','saturation','rotation','ratio','previewBg']
+.forEach(id=>$(id).addEventListener('input',previewStyle));
 
-  if (!f.type.startsWith('video/')) {
-    say('कृपया व्हिडिओ फाइल निवडा.');
-    return;
+$('mute').addEventListener('change',()=>{
+ video.muted=$('mute').checked;
+});
+$('volume').addEventListener('input',()=>{
+ video.volume=Number($('volume').value)/2;
+});
+
+$('reset').onclick=()=>{
+ $('filter').value='none';$('brightness').value=0;
+ $('contrast').value=1;$('saturation').value=1;
+ $('rotation').value=0;$('ratio').value='original';
+ $('previewBg').value='#000000';
+ previewStyle();say('Effects reset झाले.');
+};
+
+async function getFFmpeg(){
+ if(ffmpeg)return ffmpeg;
+ if(loading)return loading;
+
+ loading=(async()=>{
+  if(!window.FFmpegWASM?.FFmpeg)throw Error('FFmpeg load झाले नाही. इंटरनेट तपासा.');
+  const engine=new window.FFmpegWASM.FFmpeg();
+  engine.on('progress',({progress})=>{
+   if(Number.isFinite(progress))say('Export: '+Math.round(progress*100)+'%');
+  });
+  const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
+  async function blobURL(url,type){
+   const r=await fetch(url);if(!r.ok)throw Error('FFmpeg download failed');
+   return URL.createObjectURL(new Blob([await r.arrayBuffer()],{type}));
   }
+  const coreURL=await blobURL(base+'/ffmpeg-core.js','text/javascript');
+  const wasmURL=await blobURL(base+'/ffmpeg-core.wasm','application/wasm');
+  try{await engine.load({coreURL,wasmURL})}
+  catch(e){URL.revokeObjectURL(coreURL);URL.revokeObjectURL(wasmURL);throw e}
+  return engine;
+ })();
 
-  selectedFile = f;
-  if (videoURL) URL.revokeObjectURL(videoURL);
-  videoURL = URL.createObjectURL(f);
-  video.src = videoURL;
-  video.load();
-  say('व्हिडिओ उघडत आहे...');
-  updateButtons();
-});
-
-video.addEventListener('loadedmetadata', () => {
-  startInput.value = '0';
-  endInput.value = video.duration.toFixed(1);
-  durationText.textContent =
-    'एकूण वेळ: ' + video.duration.toFixed(1) + ' सेकंद';
-  say('व्हिडिओ तयार आहे. सुरुवात आणि शेवट निवडा.');
-  updateButtons();
-});
-
-video.addEventListener('error', () => {
-  if (selectedFile) say('व्हिडिओ उघडता आला नाही. दुसरी फाइल वापरून पाहा.');
-});
-
-[startInput, endInput].forEach(el => {
-  el.addEventListener('input', updateButtons);
-});
-
-setStartBtn.addEventListener('click', () => {
-  startInput.value = video.currentTime.toFixed(1);
-  updateButtons();
-});
-
-setEndBtn.addEventListener('click', () => {
-  endInput.value = video.currentTime.toFixed(1);
-  updateButtons();
-});
-
-previewBtn.addEventListener('click', async () => {
-  if (!validRange()) return;
-  try {
-    video.currentTime = Number(startInput.value);
-    await video.play();
-    say('निवडलेला भाग पाहत आहात.');
-  } catch (err) {
-    say('Preview सुरू झाला नाही. पुन्हा Play करून पाहा.');
-  }
-});
-
-video.addEventListener('timeupdate', () => {
-  if (validRange() &&
-      video.currentTime >= Number(endInput.value) &&
-      !video.paused) {
-    video.pause();
-  }
-});
-
-async function getFFmpeg() {
-  if (ffmpeg) return ffmpeg;
-  if (loadingPromise) return loadingPromise;
-
-  loadingPromise = (async () => {
-    if (!window.FFmpegWASM ||
-        !window.FFmpegWASM.FFmpeg) {
-      throw new Error(
-        'FFmpeg JavaScript लोड झाले नाही. इंटरनेट तपासा आणि पेज पुन्हा उघडा.'
-      );
-    }
-
-    const engine = new window.FFmpegWASM.FFmpeg();
-
-    engine.on('log', ({message}) => {
-      if (message) say('व्हिडिओ प्रक्रिया सुरू आहे...');
-    });
-
-    engine.on('progress', ({progress}) => {
-      if (Number.isFinite(progress)) {
-        say('MP4 तयार होत आहे: ' +
-          Math.round(progress * 100) + '%');
-      }
-    });
-
-    say('FFmpeg डाउनलोड होत आहे. कृपया थांबा...');
-
-    const coreBase =
-      'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
-
-    const toBlobURL = async (url, type) => {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('FFmpeg फाइल डाउनलोड झाली नाही: ' + response.status);
-      }
-      return URL.createObjectURL(
-        new Blob([await response.arrayBuffer()], {type})
-      );
-    };
-
-    const coreURL = await toBlobURL(
-      coreBase + '/ffmpeg-core.js', 'text/javascript'
-    );
-    const wasmURL = await toBlobURL(
-      coreBase + '/ffmpeg-core.wasm', 'application/wasm'
-    );
-
-    try {
-      await engine.load({coreURL, wasmURL});
-    } catch (err) {
-      URL.revokeObjectURL(coreURL);
-      URL.revokeObjectURL(wasmURL);
-      throw new Error(
-        'FFmpeg सुरू झाले नाही. इंटरनेट किंवा ब्राउझरची अडचण असू शकते.'
-      );
-    }
-
-    return engine;
-  })();
-
-  try {
-    ffmpeg = await loadingPromise;
-    return ffmpeg;
-  } catch (err) {
-    loadingPromise = null;
-    throw err;
-  }
+ try{ffmpeg=await loading;return ffmpeg}
+ catch(e){loading=null;throw e}
 }
 
-exportBtn.addEventListener('click', async () => {
-  if (!validRange() || busy) return;
+function videoFilters(){
+ const res=Number($('resolution').value);
+ const ratio=$('ratio').value;
+ let w=res===720?1280:1920,h=res===720?720:1080;
 
-  const s = Number(startInput.value);
-  const duration = Number(endInput.value) - s;
-  const currentFile = selectedFile;
-  const ext = (currentFile.name.split('.').pop() || 'mp4')
-    .toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp4';
+ if(ratio==='9:16'){w=Math.round(h*9/16)}
+ if(ratio==='1:1'){w=h}
+ if(ratio==='4:5'){w=Math.round(h*4/5)}
 
-  const inputName = 'input_video.' + ext;
-  const outputName = 'coool-video.mp4';
-  let engine;
-  let objectURL;
+ const filters=[];
+ const rot=Number($('rotation').value);
+ if(rot===1)filters.push('transpose=1');
+ if(rot===2)filters.push('hflip','vflip');
+ if(rot===3)filters.push('transpose=2');
 
-  busy = true;
-  updateButtons();
+ if(ratio==='original'){
+  filters.push(`scale=${w}:${h}:force_original_aspect_ratio=decrease`);
+  filters.push('pad='+w+':'+h+':(ow-iw)/2:(oh-ih)/2:'+ $('bg').value);
+ }else{
+  filters.push(`scale=${w}:${h}:force_original_aspect_ratio=increase`);
+  filters.push(`crop=${w}:${h}`);
+ }
 
-  try {
-    say('MP4 तयार होत आहे. पेज बंद करू नका...');
-    engine = await getFFmpeg();
+ const f=$('filter').value;
+ if(f==='gray')filters.push('hue=s=0');
+ if(f==='warm')filters.push('colorbalance=rs=0.08:bs=-0.06');
+ if(f==='cool')filters.push('colorbalance=rs=-0.05:bs=0.08');
+ if(f==='vintage')filters.push('colorbalance=rs=0.08:bs=-0.05','eq=saturation=0.75');
+ if(f==='invert')filters.push('negate');
 
-    await engine.writeFile(
-      inputName,
-      new Uint8Array(await currentFile.arrayBuffer())
-    );
+ filters.push(
+  `eq=brightness=${Number($('brightness').value)}:contrast=${Number($('contrast').value)}:saturation=${Number($('saturation').value)}`
+ );
+ return filters.join(',');
+}
 
-    say('व्हिडिओचा निवडलेला भाग तयार होत आहे...');
+$('export').addEventListener('click',async()=>{
+ if(!validRange()||busy)return;
+ busy=true;updateButtons();
+ const start=Number($('start').value);
+ const duration=Number($('end').value)-start;
+ const speed=Number($('speed').value);
+ const inputName='coool-input.'+((selectedFile.name.split('.').pop()||'mp4').replace(/[^a-z0-9]/gi,''));
+ const outputName='coool-video.mp4';
+ let engine,url;
 
-    const result = await engine.exec([
-      '-y',
-      '-ss', String(s),
-      '-i', inputName,
-      '-t', String(duration),
-      '-map', '0:v:0',
-      '-map', '0:a?',
-      '-c:v', 'libx264',
-      '-preset', 'ultrafast',
-      '-pix_fmt', 'yuv420p',
-      '-c:a', 'aac',
-      '-movflags', '+faststart',
-      outputName
-    ]);
+ try{
+  say('FFmpeg सुरू होत आहे...');
+  engine=await getFFmpeg();
+  await engine.writeFile(inputName,new Uint8Array(await selectedFile.arrayBuffer()));
 
-    if (result !== 0) {
-      throw new Error('व्हिडिओ रूपांतरित करता आला नाही.');
-    }
+  const args=['-y','-ss',String(start),'-i',inputName,
+   '-t',String(duration),'-map','0:v:0'];
 
-    const data = await engine.readFile(outputName);
-    const blob = new Blob([data], {type: 'video/mp4'});
-    objectURL = URL.createObjectURL(blob);
+  if(!$('mute').checked)args.push('-map','0:a?');
 
-    const a = document.createElement('a');
-    a.href = objectURL;
-    a.download = 'coool-video.mp4';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+  args.push('-vf',videoFilters()+`,setpts=${1/speed}*PTS`,
+   '-r',$('fps').value,'-c:v','libx264','-preset','ultrafast',
+   '-pix_fmt','yuv420p','-crf','23');
 
-    say('झाले! Downloads फोल्डरमध्ये coool-video.mp4 तपासा.');
-  } catch (err) {
-    console.error(err);
-    say('एरर: ' + (err.message || 'MP4 तयार झाले नाही') +
-      ' — इंटरनेट तपासा किंवा लहान व्हिडिओ वापरून पाहा.');
-  } finally {
-    if (objectURL) {
-      setTimeout(() => URL.revokeObjectURL(objectURL), 60000);
-    }
-    if (engine) {
-      try { await engine.deleteFile(inputName); } catch (_) {}
-      try { await engine.deleteFile(outputName); } catch (_) {}
-    }
-    busy = false;
-    updateButtons();
+  if(!$('mute').checked){
+   let remaining=speed,tempo=[];
+   while(remaining>2){tempo.push('atempo=2');remaining/=2}
+   while(remaining<.5){tempo.push('atempo=0.5');remaining/=.5}
+   tempo.push('atempo='+remaining);
+   args.push('-af',tempo.join(',')+',volume='+Number($('volume').value),'-c:a','aac');
+  }else args.push('-an');
+
+  args.push('-movflags','+faststart',outputName);
+  say('MP4 Export सुरू आहे...');
+  const result=await engine.exec(args);
+  if(result!==0)throw Error('Export failed');
+
+  const data=await engine.readFile(outputName);
+  url=URL.createObjectURL(new Blob([data],{type:'video/mp4'}));
+  const a=document.createElement('a');
+  a.href=url;a.download=outputName;
+  document.body.appendChild(a);a.click();a.remove();
+  say('MP4 तयार झाला! Downloads तपास.');
+ }catch(e){
+  console.error(e);say('Error: '+(e.message||'Export failed'));
+ }finally{
+  if(url)setTimeout(()=>URL.revokeObjectURL(url),60000);
+  if(engine){
+   try{await engine.deleteFile(inputName)}catch(e){}
+   try{await engine.deleteFile(outputName)}catch(e){}
   }
+  busy=false;updateButtons();
+ }
 });
-</script></body>
+</script>
+</body>
 </html>
