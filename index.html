@@ -1,380 +1,516 @@
+
 <!DOCTYPE html>
 <html lang="mr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Coool Video Editor</title>
-
 <style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 15px;
-  background: #101018;
-  color: white;
-  font-family: Arial, sans-serif;
-}
-
-h1 {
-  text-align: center;
-  color: #00e5ff;
-  font-size: 27px;
-}
-
-.panel {
-  background: #20202b;
-  padding: 15px;
-  border-radius: 14px;
-  margin-bottom: 15px;
-}
-
-button, .fileButton {
-  background: #00c8e8;
-  color: #101018;
-  border: none;
-  padding: 12px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-input[type="file"] {
-  display: none;
-}
-
-.fileButton {
-  display: block;
-  text-align: center;
-  margin-bottom: 12px;
-}
-
-video {
-  width: 100%;
-  max-height: 350px;
-  background: black;
-  border-radius: 10px;
-}
-
-.controls {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-
-.controls button {
-  flex: 1;
-}
-
-input[type="range"] {
-  width: 100%;
-  accent-color: #00e5ff;
-}
-
-.track {
-  background: #30303e;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 8px;
-}
-
-.trackTitle {
-  font-size: 13px;
-  color: #bfc8d8;
-  margin-bottom: 8px;
-}
-
-.timelineBar {
-  height: 32px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: #454558;
-  position: relative;
-  cursor: pointer;
-}
-
-.videoBar {
-  background: #087f8c;
-}
-
-.musicBar {
-  background: #7546b8;
-}
-
-.textBar {
-  background: #a56b17;
-}
-
-.playhead {
-  width: 3px;
-  height: 100%;
-  background: white;
-  position: absolute;
-  top: 0;
-  left: 0%;
-  pointer-events: none;
-}
-
-.small {
-  font-size: 12px;
-  color: #bfc8d8;
-}
-
-#status {
-  color: #00e5ff;
-  overflow-wrap: anywhere;
-}
+*{box-sizing:border-box}
+body{margin:0;padding:12px;background:#101018;color:#fff;font-family:Arial,sans-serif}
+h1{text-align:center;color:#00e5ff;font-size:26px}
+h3{margin-top:0}
+.panel{background:#20202b;padding:14px;border-radius:14px;margin-bottom:14px}
+button,.fileButton,select{background:#00c8e8;color:#101018;border:0;padding:10px;border-radius:8px;font-weight:bold;cursor:pointer}
+button{margin:3px}
+button:disabled{opacity:.45}
+input[type=file]{display:none}
+.fileButton{display:block;text-align:center;margin:8px 0}
+input:not([type=file]),textarea,select{max-width:100%}
+input[type=range]{width:100%;accent-color:#00e5ff}
+input[type=text],input[type=number],textarea{background:#30303e;color:white;border:1px solid #555;padding:10px;border-radius:7px;width:100%;margin:5px 0}
+select{margin:5px 0;max-width:100%}
+video{width:100%;max-height:390px;background:#000;border-radius:10px}
+.controls{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.controls button{flex:1}
+.track{background:#30303e;padding:10px;margin-top:10px;border-radius:8px}
+.trackTitle{font-size:13px;color:#bfc8d8;margin-bottom:8px}
+.timelineBar{height:34px;border-radius:6px;overflow:hidden;background:#454558;position:relative;cursor:pointer;touch-action:manipulation}
+.videoBar{background:#087f8c}
+.musicBar{background:#7546b8}
+.textBar{background:#a56b17}
+.playhead{width:3px;height:100%;background:white;position:absolute;top:0;left:0%;pointer-events:none}
+.small{font-size:12px;color:#bfc8d8}
+#status{color:#00e5ff;overflow-wrap:anywhere}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.grid label{font-size:13px}
+.badge{display:inline-block;padding:5px 8px;background:#30303e;border-radius:6px;font-size:12px}
+#overlayPreview{position:relative}
+#textPreview{position:absolute;left:50%;top:75%;transform:translate(-50%,-50%);font-weight:bold;text-shadow:2px 2px 4px #000;pointer-events:none;max-width:90%;text-align:center;white-space:pre-wrap}
+hr{border-color:#40404b}
 </style>
 </head>
-
 <body>
-
-<h1>Coool Video Editor</h1>
+<h1>🎬 Coool Video Editor</h1>
 
 <div class="panel">
-  <h3>1. Import Video</h3>
-
-  <label class="fileButton" for="videoFile">
-    Choose Video File
-  </label>
-
-  <input
-    type="file"
-    id="videoFile"
-    accept="video/*"
-  >
-
-  <p id="status">अजून व्हिडिओ निवडलेला नाही.</p>
+<h3>1. Import Video</h3>
+<label class="fileButton" for="videoFile">📂 Choose Video File</label>
+<input type="file" id="videoFile" accept="video/*">
+<p id="status">अजून व्हिडिओ निवडलेला नाही.</p>
+<label class="small">Project Name</label>
+<input id="projectName" type="text" value="My Video Project">
 </div>
 
 <div class="panel">
-  <h3>Video Preview</h3>
-
-  <video id="video" playsinline></video>
-
-  <div class="controls">
-    <button id="playBtn">▶ Play</button>
-    <button id="pauseBtn">⏸ Pause</button>
-    <button id="startBtn">⏮ सुरुवात</button>
-  </div>
-
-  <p>
-    <span id="currentTime">00:00</span>
-    /
-    <span id="duration">00:00</span>
-  </p>
-
-  <input
-    type="range"
-    id="seek"
-    min="0"
-    max="1000"
-    value="0"
-  >
+<h3>2. Video Preview</h3>
+<div id="overlayPreview">
+<video id="video" playsinline controls></video>
+<div id="textPreview"></div>
+</div>
+<div class="controls">
+<button id="playBtn">▶ Play</button>
+<button id="pauseBtn">⏸ Pause</button>
+<button id="startBtn">⏮ सुरुवात</button>
+<button id="muteBtn">🔊 Mute</button>
+</div>
+<p><span id="currentTime">00:00</span> / <span id="duration">00:00</span></p>
+<input type="range" id="seek" min="0" max="1000" value="0">
 </div>
 
 <div class="panel">
-  <h3>2. Timeline — Multiple Tracks</h3>
-  <p class="small">
-    टाइमलाइनवर टॅप करून व्हिडिओची जागा बदला.
-  </p>
+<h3>3. Timeline — Multiple Tracks</h3>
+<div class="track">
+<div class="trackTitle">🎬 VIDEO TRACK</div>
+<div class="timelineBar videoBar" id="videoTrack"><div class="playhead" id="videoHead"></div></div>
+<p class="small" id="clipInfo">एक व्हिडिओ निवड.</p>
+<div class="controls">
+<button id="markIn">Mark In</button>
+<button id="markOut">Mark Out</button>
+<button id="previewTrim">▶ Trim Preview</button>
+<button id="clearTrim">Clear Trim</button>
+</div>
+<div class="controls">
+<button id="splitBtn">✂ Split</button>
+<button id="duplicateBtn">Duplicate</button>
+<button id="deleteBtn">Delete Clip</button>
+</div>
+<p class="small" id="trimInfo">In: 0s | Out: पूर्ण व्हिडिओ</p>
+</div>
 
-  <div class="track">
-    <div class="trackTitle">🎬 VIDEO LINE</div>
-    <div class="timelineBar videoBar" id="videoTrack">
-      <div class="playhead" id="videoHead"></div>
-    </div>
-  </div>
+<div class="track">
+<div class="trackTitle">🎵 MUSIC TRACK</div>
+<div class="timelineBar musicBar" id="musicTrack"><div class="playhead" id="musicHead"></div></div>
+<label class="fileButton" for="musicFile">＋ Add Music</label>
+<input type="file" id="musicFile" accept="audio/*">
+<p class="small" id="musicStatus">संगीत निवडलेले नाही.</p>
+<label>Music Volume <span id="musicVolLabel">70%</span></label>
+<input id="musicVol" type="range" min="0" max="100" value="70">
+<label>Original Video Volume <span id="videoVolLabel">100%</span></label>
+<input id="videoVol" type="range" min="0" max="100" value="100">
+<div class="controls">
+<button id="musicPlay">Play Music</button>
+<button id="musicStop">Stop Music</button>
+<button id="removeMusic">Remove Music</button>
+</div>
+</div>
 
-  <div class="track">
-    <div class="trackTitle">🎵 MUSIC LINE</div>
-    <div class="timelineBar musicBar" id="musicTrack">
-      <div class="playhead" id="musicHead"></div>
-    </div>
-    <label class="fileButton" for="musicFile">
-      ＋ Add Music
-    </label>
-    <input
-      type="file"
-      id="musicFile"
-      accept="audio/*"
-    >
-    <p class="small" id="musicStatus">
-      संगीत निवडलेले नाही.
-    </p>
-  </div>
+<div class="track">
+<div class="trackTitle">📝 TEXT TRACK</div>
+<div class="timelineBar textBar" id="textTrack"><div class="playhead" id="textHead"></div></div>
+<p class="small">Text Overlay Preview</p>
+<input id="overlayText" type="text" placeholder="व्हिडिओवरील मजकूर लिहा">
+<div class="grid">
+<label>Text Color<input id="textColor" type="color" value="#ffffff"></label>
+<label>Text Size<input id="textSize" type="number" min="12" max="80" value="30"></label>
+</div>
+<button id="applyText">Apply Text</button>
+<button id="clearText">Remove Text</button>
+</div>
+</div>
 
-  <div class="track">
-    <div class="trackTitle">📝 TEXT LINE</div>
-    <div class="timelineBar textBar" id="textTrack">
-      <div class="playhead" id="textHead"></div>
-    </div>
-    <p class="small">
-      ही सध्या टाइमलाइनची जागा दाखवणारी लाइन आहे.
-    </p>
-  </div>
+<div class="panel">
+<h3>4. Trim / Split / Clip Editing</h3>
+<p class="small">Mark In आणि Mark Out निवडून त्या भागाचा Preview पाहता येईल. ही आवृत्ती मूळ फाइल कायमस्वरूपी कापत नाही.</p>
+<label>Trim Start (seconds)</label>
+<input id="trimStart" type="number" min="0" value="0">
+<label>Trim End (seconds)</label>
+<input id="trimEnd" type="number" min="0" value="0">
+<div class="controls">
+<button id="setTrim">Set Trim Range</button>
+<button id="goIn">Go to In</button>
+<button id="goOut">Go to Out</button>
+</div>
+<p id="editStatus" class="small">Clip editing तयार आहे.</p>
+</div>
+
+<div class="panel">
+<h3>5. Filters & Color Effects</h3>
+<label>Filter Preset</label>
+<select id="filter">
+<option value="none">Normal</option>
+<option value="grayscale(1)">Black & White</option>
+<option value="sepia(1)">Sepia</option>
+<option value="contrast(1.3) saturate(1.3)">Vivid</option>
+<option value="saturate(1.8)">High Saturation</option>
+<option value="brightness(1.15)">Bright</option>
+<option value="contrast(1.3)">High Contrast</option>
+<option value="hue-rotate(90deg)">Color Shift</option>
+</select>
+<label>Brightness <span id="brightVal">100%</span></label>
+<input id="brightness" type="range" min="25" max="200" value="100">
+<label>Contrast <span id="contrastVal">100%</span></label>
+<input id="contrast" type="range" min="25" max="200" value="100">
+<label>Saturation <span id="satVal">100%</span></label>
+<input id="saturation" type="range" min="0" max="250" value="100">
+<div class="controls">
+<button id="resetEffects">Reset Effects</button>
+<button id="rotateBtn">Rotate 90°</button>
+<button id="flipBtn">Flip</button>
+</div>
+</div>
+
+<div class="panel">
+<h3>6. Speed & Playback</h3>
+<label>Speed</label>
+<select id="speed">
+<option value="0.25">0.25x</option><option value="0.5">0.5x</option>
+<option value="0.75">0.75x</option><option value="1" selected>1x Normal</option>
+<option value="1.25">1.25x</option><option value="1.5">1.5x</option>
+<option value="2">2x</option>
+</select>
+<button id="reverseInfo">Reverse Video</button>
+<button id="stabilizeInfo">Stabilization</button>
+<button id="freezeBtn">Freeze Preview</button>
+<p id="advancedStatus" class="small">Reverse आणि stabilization साठी processing engine आवश्यक आहे.</p>
+</div>
+
+<div class="panel">
+<h3>7. Crop & Aspect Ratio</h3>
+<label>Aspect Ratio</label>
+<select id="aspect">
+<option value="auto">Original</option>
+<option value="16/9">16:9 YouTube</option>
+<option value="9/16">9:16 Shorts / Reels</option>
+<option value="1/1">1:1 Square</option>
+<option value="4/3">4:3</option>
+</select>
+<label>Preview Background</label>
+<input id="bgColor" type="color" value="#000000">
+<label>Crop Zoom</label>
+<input id="zoom" type="range" min="50" max="200" value="100">
+<p class="small">Crop आणि aspect ratio सध्या Preview वर लागू होतात.</p>
+</div>
+
+<div class="panel">
+<h3>8. Transitions</h3>
+<select id="transition">
+<option value="none">None</option>
+<option value="fade">Fade</option>
+<option value="zoom">Zoom</option>
+<option value="slide">Slide</option>
+</select>
+<button id="applyTransition">Apply Transition Preview</button>
+<p id="transitionStatus" class="small">Transition चे खरे rendered output पुढील video-engine टप्प्यात जोडू.</p>
+</div>
+
+<div class="panel">
+<h3>9. Stickers / Logo</h3>
+<label class="fileButton" for="imageFile">＋ Add Sticker / Logo Image</label>
+<input type="file" id="imageFile" accept="image/*">
+<img id="stickerPreview" alt="Sticker preview" style="display:none;max-width:100px;max-height:100px;margin:8px">
+<button id="removeSticker">Remove Sticker</button>
+</div>
+
+<div class="panel">
+<h3>10. Undo / Redo / Project</h3>
+<div class="controls">
+<button id="undoBtn">↶ Undo</button>
+<button id="redoBtn">↷ Redo</button>
+<button id="resetBtn">Reset Editor</button>
+</div>
+<div class="controls">
+<button id="saveProject">💾 Save Project JSON</button>
+<label class="fileButton" for="loadProject">📂 Open Project JSON</label>
+<input type="file" id="loadProject" accept=".json,application/json">
+</div>
+</div>
+
+<div class="panel">
+<h3>11. Export</h3>
+<label>Resolution setting</label>
+<select id="resolution">
+<option value="720">720p</option>
+<option value="1080" selected>1080p</option>
+<option value="2160">4K (device support required)</option>
+</select>
+<label>FPS</label>
+<select id="fps"><option>24</option><option selected>30</option><option>60</option></select>
+<button id="exportBtn">Export Preview Recording</button>
+<p id="exportStatus" class="small">हा ब्राउझर Preview Recording बनवण्याचा प्रयत्न करेल. सर्व effects/music MP4 मध्ये जोडले जातीलच असे नाही.</p>
+<a id="downloadLink" style="display:none;color:#00e5ff" download="coool-video.webm">Download Preview Recording</a>
 </div>
 
 <script>
-const video = document.getElementById("video");
-const videoFile = document.getElementById("videoFile");
-const musicFile = document.getElementById("musicFile");
-const seek = document.getElementById("seek");
-const status = document.getElementById("status");
+(() => {
+const $ = id => document.getElementById(id);
+const video = $("video"), music = new Audio();
+let videoURL = null, musicURL = null, stickerURL = null;
+let trimIn = 0, trimOut = null, rotation = 0, flipped = false;
+let frozen = false, trimTimer = null, recorder = null;
+let undoStack = [], redoStack = [], clips = [];
+let currentClip = 0;
 
-let videoURL = null;
-let musicURL = null;
-let music = new Audio();
-
-function formatTime(seconds) {
-  if (!Number.isFinite(seconds)) return "00:00";
-
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-
-  return String(mins).padStart(2, "0") + ":" +
-         String(secs).padStart(2, "0");
+function timeText(s) {
+  if (!Number.isFinite(s) || s < 0) s = 0;
+  s = Math.floor(s);
+  return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
 }
-
-videoFile.addEventListener("change", function () {
-  const file = this.files[0];
-  if (!file) return;
-
-  if (videoURL) URL.revokeObjectURL(videoURL);
-
-  videoURL = URL.createObjectURL(file);
-  video.src = videoURL;
-  video.load();
-
-  status.textContent = "निवडलेला व्हिडिओ: " + file.name;
-});
-
-video.addEventListener("loadedmetadata", function () {
-  document.getElementById("duration").textContent =
-    formatTime(video.duration);
-
-  updateTimeline();
-});
-
-document.getElementById("playBtn").addEventListener("click", async () => {
-  if (!video.src) {
-    alert("आधी व्हिडिओ निवड भाऊ!");
-    return;
-  }
-
-  try {
-    await video.play();
-
-    if (music.src) {
-      music.currentTime = Math.min(
-        video.currentTime,
-        Number.isFinite(music.duration) ? music.duration : 0
-      );
-
-      music.play().catch(() => {});
-    }
-  } catch (error) {
-    alert("व्हिडिओ सुरू झाला नाही. पुन्हा प्रयत्न कर.");
-  }
-});
-
-document.getElementById("pauseBtn").addEventListener("click", () => {
-  video.pause();
-  music.pause();
-});
-
-document.getElementById("startBtn").addEventListener("click", () => {
-  video.currentTime = 0;
-  music.currentTime = 0;
-  updateTimeline();
-});
-
-seek.addEventListener("input", function () {
-  if (!Number.isFinite(video.duration) || video.duration <= 0) return;
-
-  video.currentTime = (Number(this.value) / 1000) * video.duration;
-  updateTimeline();
-});
-
-video.addEventListener("timeupdate", updateTimeline);
-
+function saveState() {
+  undoStack.push(snapshot());
+  if (undoStack.length > 30) undoStack.shift();
+  redoStack = [];
+}
+function snapshot() {
+  return {
+    trimIn, trimOut, rotation, flipped,
+    speed:$("speed").value, filter:$("filter").value,
+    brightness:$("brightness").value, contrast:$("contrast").value,
+    saturation:$("saturation").value, text:$("overlayText").value,
+    textColor:$("textColor").value, textSize:$("textSize").value,
+    aspect:$("aspect").value, zoom:$("zoom").value,
+    bgColor:$("bgColor").value, projectName:$("projectName").value
+  };
+}
+function applySnapshot(s) {
+  if (!s) return;
+  trimIn=s.trimIn; trimOut=s.trimOut; rotation=s.rotation; flipped=s.flipped;
+  ["speed","filter","brightness","contrast","saturation","overlayText",
+   "textColor","textSize","aspect","zoom","bgColor","projectName"].forEach(k=>{
+    const map={overlayText:"overlayText",textColor:"textColor",textSize:"textSize",
+      projectName:"projectName"};
+    if (s[k] !== undefined && $(map[k]||k)) $(map[k]||k).value=s[k];
+  });
+  updateEffects(); updateText(); updateTransform(); updateTrimInfo();
+}
+function formatFilter(v) {
+  return v==="none" ? "" : v+" ";
+}
+function updateEffects() {
+  const b=+$("brightness").value, c=+$("contrast").value, s=+$("saturation").value;
+  $("brightVal").textContent=b+"%";
+  $("contrastVal").textContent=c+"%";
+  $("satVal").textContent=s+"%";
+  video.style.filter = formatFilter($("filter").value)+
+    "brightness("+b+"%) contrast("+c+"%) saturate("+s+"%)";
+}
+function updateTransform() {
+  video.style.transform="rotate("+rotation+"deg) scale("+(flipped?-1:1)+")";
+  video.style.objectFit="contain";
+  const a=$("aspect").value;
+  $("overlayPreview").style.aspectRatio=a==="auto"?"auto":a;
+  video.style.aspectRatio=a==="auto"?"auto":a;
+  $("overlayPreview").style.background=$("bgColor").value;
+  video.style.background=$("bgColor").value;
+  video.style.objectFit="cover";
+  video.style.transform += " scale("+(+$("zoom").value/100)+")";
+}
+function updateText() {
+  $("textPreview").textContent=$("overlayText").value;
+  $("textPreview").style.color=$("textColor").value;
+  $("textPreview").style.fontSize=$("textSize").value+"px";
+}
+function updateTrimInfo() {
+  $("trimStart").value=trimIn;
+  $("trimEnd").value=trimOut===null?(Number.isFinite(video.duration)?video.duration:0):trimOut;
+  $("trimInfo").textContent="In: "+trimIn.toFixed(2)+"s | Out: "+($("trimEnd").value)+"s";
+}
 function updateTimeline() {
-  const duration = video.duration;
-
-  document.getElementById("currentTime").textContent =
-    formatTime(video.currentTime);
-
-  if (!Number.isFinite(duration) || duration <= 0) return;
-
-  const progress = (video.currentTime / duration) * 100;
-
-  seek.value = Math.round(progress * 10);
-
-  document.getElementById("videoHead").style.left =
-    progress + "%";
-
-  document.getElementById("musicHead").style.left =
-    progress + "%";
-
-  document.getElementById("textHead").style.left =
-    progress + "%";
-}
-
-function seekFromTrack(event) {
-  if (!Number.isFinite(video.duration) || video.duration <= 0) {
-    alert("आधी व्हिडिओ निवड.");
-    return;
+  $("currentTime").textContent=timeText(video.currentTime);
+  if (Number.isFinite(video.duration)&&video.duration>0) {
+    const p=video.currentTime/video.duration*100;
+    $("seek").value=Math.round(p*10);
+    ["videoHead","musicHead","textHead"].forEach(id=>$(id).style.left=p+"%");
   }
-
-  const rect = event.currentTarget.getBoundingClientRect();
-
-  const position = Math.max(
-    0,
-    Math.min(1, (event.clientX - rect.left) / rect.width)
-  );
-
-  video.currentTime = position * video.duration;
+  if (trimOut!==null && !video.paused && video.currentTime>=trimOut) {
+    video.pause();
+    if(trimTimer){clearInterval(trimTimer);trimTimer=null;}
+  }
+}
+$("videoFile").addEventListener("change",function(){
+  const f=this.files[0]; if(!f)return;
+  if(!f.type.startsWith("video/")){ $("status").textContent="योग्य व्हिडिओ निवड.";return;}
+  saveState();
+  if(videoURL)URL.revokeObjectURL(videoURL);
+  videoURL=URL.createObjectURL(f);video.src=videoURL;video.load();
+  clips=[{name:f.name,start:0,end:null}];currentClip=0;
+  $("status").textContent="Video: "+f.name;
+  $("clipInfo").textContent=f.name;
+});
+video.addEventListener("loadedmetadata",()=>{
+  trimIn=0;trimOut=video.duration;updateTrimInfo();
+  $("duration").textContent=timeText(video.duration);
+  updateTimeline();
+});
+video.addEventListener("timeupdate",updateTimeline);
+$("playBtn").onclick=()=>video.play().catch(()=>alert("आधी व्हिडिओ निवड."));
+$("pauseBtn").onclick=()=>{video.pause();music.pause();};
+$("startBtn").onclick=()=>{video.currentTime=trimIn||0;updateTimeline();};
+$("muteBtn").onclick=()=>{video.muted=!video.muted;$("muteBtn").textContent=video.muted?"🔇 Unmute":"🔊 Mute";};
+$("seek").addEventListener("input",function(){
+  if(Number.isFinite(video.duration))video.currentTime=+this.value/1000*video.duration;
+});
+function seekTrack(e){
+  if(!Number.isFinite(video.duration)||!video.duration)return;
+  const r=e.currentTarget.getBoundingClientRect();
+  video.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*video.duration;
   updateTimeline();
 }
+["videoTrack","musicTrack","textTrack"].forEach(id=>$(id).addEventListener("click",seekTrack));
 
-document.getElementById("videoTrack")
-  .addEventListener("click", seekFromTrack);
-
-document.getElementById("musicTrack")
-  .addEventListener("click", seekFromTrack);
-
-document.getElementById("textTrack")
-  .addEventListener("click", seekFromTrack);
-
-musicFile.addEventListener("change", function () {
-  const file = this.files[0];
-  if (!file) return;
-
-  if (musicURL) URL.revokeObjectURL(musicURL);
-
-  musicURL = URL.createObjectURL(file);
-  music.src = musicURL;
-
-  document.getElementById("musicStatus").textContent =
-    "निवडलेले संगीत: " + file.name;
+$("musicFile").addEventListener("change",function(){
+  const f=this.files[0];if(!f)return;
+  if(musicURL)URL.revokeObjectURL(musicURL);
+  musicURL=URL.createObjectURL(f);music.src=musicURL;music.load();
+  $("musicStatus").textContent="Music: "+f.name;
 });
+$("musicVol").oninput=()=>{music.volume=+$("musicVol").value/100;$("musicVolLabel").textContent=$("musicVol").value+"%";};
+$("videoVol").oninput=()=>{video.volume=+$("videoVol").value/100;$("videoVolLabel").textContent=$("videoVol").value+"%";};
+$("musicPlay").onclick=()=>music.play().catch(()=>alert("आधी संगीत निवड."));
+$("musicStop").onclick=()=>{music.pause();music.currentTime=0;};
+$("removeMusic").onclick=()=>{music.pause();music.removeAttribute("src");music.load();if(musicURL)URL.revokeObjectURL(musicURL);musicURL=null;$("musicStatus").textContent="Music काढले."};
+video.addEventListener("play",()=>{if(music.src){music.currentTime=Math.min(video.currentTime,music.duration||0);music.play().catch(()=>{});}});
+video.addEventListener("pause",()=>music.pause());
+video.addEventListener("seeked",()=>{if(music.src){try{music.currentTime=Math.min(video.currentTime,music.duration||0);}catch(e){}}});
 
-video.addEventListener("seeked", () => {
-  if (music.src && !video.paused) {
-    music.currentTime = Math.min(
-      video.currentTime,
-      Number.isFinite(music.duration) ? music.duration : 0
-    );
+$("markIn").onclick=()=>{saveState();trimIn=video.currentTime;updateTrimInfo();};
+$("markOut").onclick=()=>{saveState();trimOut=video.currentTime;updateTrimInfo();};
+$("setTrim").onclick=()=>{
+  const a=+$("trimStart").value,b=+$("trimEnd").value;
+  if(!Number.isFinite(video.duration)||a<0||b<=a||b>video.duration){alert("Trim वेळ तपास.");return;}
+  saveState();trimIn=a;trimOut=b;video.currentTime=a;updateTrimInfo();
+  $("editStatus").textContent="Trim range set झाला. Preview Trim दाब.";
+};
+$("previewTrim").onclick=()=>{
+  if(trimOut===null||trimOut<=trimIn){alert("आधी Trim range सेट कर.");return;}
+  video.currentTime=trimIn;video.play().catch(()=>{});
+  if(trimTimer)clearInterval(trimTimer);
+  trimTimer=setInterval(()=>{if(video.currentTime>=trimOut){video.pause();clearInterval(trimTimer);trimTimer=null;}},100);
+};
+$("clearTrim").onclick=()=>{saveState();trimIn=0;trimOut=video.duration||null;updateTrimInfo();};
+$("goIn").onclick=()=>{video.currentTime=trimIn;};
+$("goOut").onclick=()=>{if(trimOut!==null)video.currentTime=trimOut;};
+
+$("splitBtn").onclick=()=>{
+  if(!video.src||!Number.isFinite(video.duration)){alert("आधी व्हिडिओ निवड.");return;}
+  if(video.currentTime<=trimIn||video.currentTime>=(trimOut??video.duration)){alert("Trim range मध्ये Split point निवड.");return;}
+  saveState();
+  const point=video.currentTime;
+  clips=[{name:"Clip 1",start:trimIn,end:point},{name:"Clip 2",start:point,end:trimOut??video.duration}];
+  $("clipInfo").textContent=clips.map((c,i)=>"Clip "+(i+1)+": "+c.start.toFixed(1)+"–"+c.end.toFixed(1)+"s").join(" | ");
+  $("editStatus").textContent="Split points तयार केले (project timeline). मूळ video फाइल अजून कापलेली नाही.";
+};
+$("duplicateBtn").onclick=()=>{
+  if(!clips.length){alert("आधी व्हिडिओ निवड.");return;}
+  saveState();clips.push({...clips[currentClip%clips.length],name:"Duplicate "+(clips.length+1)});
+  $("clipInfo").textContent=clips.map(c=>c.name+" ["+c.start.toFixed(1)+"–"+c.end.toFixed(1)+"s]").join(" | ");
+};
+$("deleteBtn").onclick=()=>{
+  if(!clips.length){alert("Delete करण्यासाठी clip नाही.");return;}
+  saveState();clips.splice(currentClip,1);currentClip=0;
+  $("clipInfo").textContent=clips.length?clips.map(c=>c.name).join(" | "):"Timeline मधून clip काढला. मूळ video फाइल सुरक्षित आहे.";
+};
+
+["filter","brightness","contrast","saturation"].forEach(id=>{
+  $(id).addEventListener("input",()=>{saveState();updateEffects();});
+});
+$("resetEffects").onclick=()=>{
+  saveState();$("filter").value="none";$("brightness").value=100;
+  $("contrast").value=100;$("saturation").value=100;updateEffects();
+};
+$("speed").onchange=()=>{saveState();video.playbackRate=+$("speed").value;};
+$("rotateBtn").onclick=()=>{saveState();rotation=(rotation+90)%360;updateTransform();};
+$("flipBtn").onclick=()=>{saveState();flipped=!flipped;updateTransform();};
+$("freezeBtn").onclick=()=>{frozen=!frozen;if(frozen)video.pause();$("advancedStatus").textContent=frozen?"Preview paused (freeze).":"Freeze Preview बंद.";};
+$("reverseInfo").onclick=()=>alert("खरे Reverse Video बनवण्यासाठी FFmpeg किंवा native video engine जोडणे आवश्यक आहे.");
+$("stabilizeInfo").onclick=()=>alert("Stabilization साठी video processing engine आवश्यक आहे.");
+$("aspect").onchange=()=>{saveState();updateTransform();};
+$("bgColor").oninput=updateTransform;
+$("zoom").oninput=updateTransform;
+$("applyText").onclick=()=>{saveState();updateText();};
+$("clearText").onclick=()=>{saveState();$("overlayText").value="";updateText();};
+$("applyTransition").onclick=()=>{
+  const t=$("transition").value;
+  $("transitionStatus").textContent=t==="none"?"Transition बंद.":"Selected "+t+" preview. खरे transition render करण्यासाठी पुढे engine लागेल.";
+  if(t==="fade"){video.style.opacity="0.6";setTimeout(()=>video.style.opacity="1",500);}
+  else if(t==="zoom"){video.style.transition="transform .4s";video.style.transform+=" scale(1.03)";setTimeout(updateTransform,450);}
+  else if(t==="slide"){video.style.transition="opacity .3s";video.style.opacity=".5";setTimeout(()=>video.style.opacity="1",300);}
+};
+$("imageFile").onchange=function(){
+  const f=this.files[0];if(!f)return;
+  if(stickerURL)URL.revokeObjectURL(stickerURL);
+  stickerURL=URL.createObjectURL(f);$("stickerPreview").src=stickerURL;$("stickerPreview").style.display="block";
+};
+$("removeSticker").onclick=()=>{$("stickerPreview").style.display="none";$("stickerPreview").removeAttribute("src");if(stickerURL)URL.revokeObjectURL(stickerURL);stickerURL=null;};
+
+$("undoBtn").onclick=()=>{
+  if(!undoStack.length)return alert("Undo history नाही.");
+  redoStack.push(snapshot());applySnapshot(undoStack.pop());
+};
+$("redoBtn").onclick=()=>{
+  if(!redoStack.length)return alert("Redo history नाही.");
+  undoStack.push(snapshot());applySnapshot(redoStack.pop());
+};
+$("resetBtn").onclick=()=>{
+  if(!confirm("Editor settings reset करायचे?"))return;
+  saveState();trimIn=0;trimOut=video.duration||null;rotation=0;flipped=false;
+  $("speed").value=1;$("filter").value="none";$("brightness").value=100;
+  $("contrast").value=100;$("saturation").value=100;$("overlayText").value="";
+  $("aspect").value="auto";$("zoom").value=100;$("bgColor").value="#000000";
+  updateEffects();updateTransform();updateText();updateTrimInfo();
+};
+
+$("saveProject").onclick=()=>{
+  const project={app:"Coool Video Editor",version:1,settings:snapshot(),
+    videoName:$("videoFile").files[0]?.name||null,
+    musicName:$("musicFile").files[0]?.name||null,
+    clips,trimIn,trimOut};
+  const blob=new Blob([JSON.stringify(project,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=($("projectName").value||"coool-project")+".json";a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+$("loadProject").onchange=async function(){
+  const f=this.files[0];if(!f)return;
+  try{
+    const p=JSON.parse(await f.text());
+    saveState();if(p.settings)applySnapshot(p.settings);
+    if(Array.isArray(p.clips))clips=p.clips;
+    trimIn=Number(p.trimIn)||0;trimOut=p.trimOut??null;updateTrimInfo();
+    $("editStatus").textContent="Project settings loaded. मूळ video/music फाइल पुन्हा निवडावी लागू शकते.";
+  }catch(e){alert("Project JSON उघडता आला नाही.");}
+};
+
+$("exportBtn").onclick=async()=>{
+  if(!video.src){alert("आधी व्हिडिओ निवड.");return;}
+  if(!video.captureStream&&!video.mozCaptureStream){
+    $("exportStatus").textContent="या ब्राउझरमध्ये Preview Recording उपलब्ध नाही.";
+    return;
   }
-});
-
-music.addEventListener("ended", () => {
-  music.pause();
-});
+  try{
+    const stream=(video.captureStream||video.mozCaptureStream).call(video);
+    const mime=MediaRecorder.isTypeSupported("video/webm;codecs=vp9")?
+      "video/webm;codecs=vp9":"video/webm";
+    const chunks=[];
+    recorder=new MediaRecorder(stream,{mimeType:mime});
+    recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+    recorder.onstop=()=>{
+      const blob=new Blob(chunks,{type:"video/webm"});
+      const url=URL.createObjectURL(blob);
+      $("downloadLink").href=url;$("downloadLink").style.display="inline-block";
+      $("downloadLink").download="coool-preview.webm";
+      $("exportStatus").textContent="Preview recording तयार. हा MP4 export नाही आणि music/text/filter सर्व समाविष्ट होतीलच असे नाही.";
+    };
+    recorder.start();
+    await video.play();
+    $("exportStatus").textContent="Preview recording सुरू आहे. व्हिडिओ संपल्यावर recording थांबेल.";
+    video.onended=()=>{if(recorder&&recorder.state!=="inactive")recorder.stop();};
+  }catch(e){
+    $("exportStatus").textContent="Recording सुरू होऊ शकले नाही. Browser permission/support तपास.";
+  }
+};
+updateEffects();updateText();updateTransform();updateTrimInfo();
+})();
 </script>
-
 </body>
 </html>
