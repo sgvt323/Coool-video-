@@ -28,8 +28,14 @@ input[type=text],select{padding:10px;background:#292b40;color:white;border:1px s
 .row button{flex:1}
 #timeline{width:100%;margin:15px 0;accent-color:#7c83ff}
 #status{color:#aeb2ff;font-size:13px}
-#textOverlay{position:absolute;top:40%;left:0;width:100%;text-align:center;font-size:28px;font-weight:bold;text-shadow:2px 2px 4px black;pointer-events:none;white-space:pre-wrap}
-#videoWrap{position:relative}
+#textOverlay{position:absolute;top:40%;left:0;width:100%;text-align:center;font-size:28px;font-weight:bold;text-shadow:2px 2px 4px black;pointer-events:none;white-space:pre-wrap;z-index:3}
+#videoWrap{position:relative;overflow:hidden;background:#000;border-radius:12px;isolation:isolate}
+#bgVideo{position:absolute;inset:-10%;width:120%;height:120%;max-height:none;object-fit:cover;z-index:0;filter:blur(18px);pointer-events:none;background:transparent;border-radius:0}
+#video{position:relative;z-index:1;background:transparent;object-fit:contain}
+#videoWrap #video{display:block}
+.blur-panel{background:#1b1d2d;border:1px solid #34364d;border-radius:16px;padding:18px;margin:14px 0}
+.blur-panel input[type=range]{width:100%;accent-color:#7c83ff}
+#blurStatus{color:#aeb2ff;font-size:13px}
 .note{font-size:12px;color:#b6b8ce;line-height:1.6}
 </style>
 </head>
@@ -67,16 +73,35 @@ input[type=text],select{padding:10px;background:#292b40;color:white;border:1px s
   <div class="card">
     <h2>Video Preview</h2>
     <div id="videoWrap">
+      <video id="bgVideo" muted playsinline></video>
       <video id="video" controls playsinline></video>
       <div id="textOverlay"></div>
     </div>
+
     <input id="timeline" type="range" min="0" max="100" value="0">
+
     <div class="row">
       <button onclick="playVideo()">▶ Play</button>
       <button class="secondary" onclick="pauseVideo()">⏸ Pause</button>
       <button class="secondary" onclick="resetEdit()">↺ Reset Effects</button>
     </div>
     <p id="timeInfo" class="note">00:00 / 00:00</p>
+  </div>
+
+  <!-- BACKGROUND BLUR -->
+  <div class="blur-panel">
+    <h3>🌫️ Background Blur</h3>
+
+    <div class="row">
+      <button id="blurOn">🌫️ Blur ON</button>
+      <button id="blurOff" class="secondary">🚫 Blur OFF</button>
+      <button id="blurReset" class="secondary">↺ Reset Blur</button>
+    </div>
+
+    <label>Blur Strength: <span id="blurValue">18px</span></label>
+    <input id="blurRange" type="range" min="0" max="40" value="18">
+
+    <p id="blurStatus" class="note">Background Blur चालू आहे.</p>
   </div>
 
   <div class="card">
@@ -133,19 +158,20 @@ input[type=text],select{padding:10px;background:#292b40;color:white;border:1px s
 
   <div class="card">
     <h3>📥 Export / Download</h3>
-    <p class="note">Download the original video file. The effects shown in preview are not permanently applied by this basic web version.</p>
+    <p class="note">Download the original video file. Preview effects, blur and text are not permanently applied by this basic web version.</p>
     <button onclick="exportVideo()">Download Video</button>
     <p id="status"></p>
   </div>
 </main>
 
-<audio id="music"></audio>
+<audio id="music" controls style="display:none"></audio>
 
 <script>
 const $ = id => document.getElementById(id);
 let videoURL = "";
 let musicURL = "";
 let rotation = 0;
+let blurEnabled = true;
 
 $("videoFile").addEventListener("change", () => {
   const file = $("videoFile").files[0];
@@ -161,10 +187,17 @@ function openEditor() {
     alert("Bhau, pahile video select kar!");
     return;
   }
+
   $("homePage").classList.remove("active");
   $("editorPage").classList.add("active");
+
   $("video").src = videoURL;
+  $("bgVideo").src = videoURL;
   $("video").load();
+  $("bgVideo").load();
+
+  updateEffects();
+  updateBackgroundBlur();
   window.scrollTo(0,0);
 }
 
@@ -180,36 +213,104 @@ function playVideo() {
     $("status").textContent = "Play करण्यासाठी पुन्हा बटण दाब.";
   });
 }
+
 function pauseVideo() {
   $("video").pause();
+  $("bgVideo").pause();
 }
 
 $("video").addEventListener("loadedmetadata", () => {
   $("timeInfo").textContent = fmt(0) + " / " + fmt($("video").duration);
 });
+
 $("video").addEventListener("timeupdate", () => {
   const v = $("video");
   if (v.duration) $("timeline").value = v.currentTime / v.duration * 100;
   $("timeInfo").textContent = fmt(v.currentTime) + " / " + fmt(v.duration);
 });
+
 $("timeline").addEventListener("input", () => {
   const v = $("video");
   if (v.duration) v.currentTime = Number($("timeline").value) / 100 * v.duration;
 });
+
 function fmt(seconds) {
   if (!Number.isFinite(seconds)) return "00:00";
   const s = Math.floor(seconds);
   return String(Math.floor(s/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0");
 }
 
+/* Keep background video in sync */
+$("video").addEventListener("play", () => {
+  $("bgVideo").play().catch(() => {});
+});
+
+$("video").addEventListener("pause", () => {
+  $("bgVideo").pause();
+});
+
+$("video").addEventListener("seeking", () => {
+  const bg = $("bgVideo");
+  if (bg.readyState >= 1) bg.currentTime = $("video").currentTime;
+});
+
+$("video").addEventListener("timeupdate", () => {
+  const bg = $("bgVideo");
+  const v = $("video");
+
+  if (bg.readyState >= 2 &&
+      Math.abs(bg.currentTime - v.currentTime) > 0.3) {
+    bg.currentTime = v.currentTime;
+  }
+});
+
+/* Background Blur controls */
+function updateBackgroundBlur() {
+  const amount = Number($("blurRange").value);
+  const bg = $("bgVideo");
+
+  bg.style.filter = blurEnabled
+    ? `blur(${amount}px)`
+    : "blur(0px)";
+
+  $("blurValue").textContent = amount + "px";
+  $("blurOn").style.background = blurEnabled ? "#656cff" : "#34374d";
+  $("blurOff").style.background = !blurEnabled ? "#656cff" : "#34374d";
+
+  $("blurStatus").textContent = blurEnabled
+    ? "Background Blur चालू आहे."
+    : "Background Blur बंद आहे.";
+}
+
+$("blurOn").addEventListener("click", () => {
+  blurEnabled = true;
+  updateBackgroundBlur();
+});
+
+$("blurOff").addEventListener("click", () => {
+  blurEnabled = false;
+  updateBackgroundBlur();
+});
+
+$("blurReset").addEventListener("click", () => {
+  $("blurRange").value = 18;
+  blurEnabled = true;
+  updateBackgroundBlur();
+});
+
+$("blurRange").addEventListener("input", updateBackgroundBlur);
+
+/* Existing effects */
 function updateEffects() {
   $("video").style.filter =
     `brightness(${$("brightness").value}) ` +
     `contrast(${$("contrast").value}) ` +
     `saturate(${$("saturation").value})`;
+
   $("video").playbackRate = Number($("speed").value);
   $("video").style.transform = `rotate(${rotation}deg)`;
 }
+
 ["brightness","contrast","saturation","speed"].forEach(id =>
   $(id).addEventListener("input", updateEffects)
 );
@@ -218,6 +319,7 @@ function rotate(amount) {
   rotation = (rotation + amount) % 360;
   updateEffects();
 }
+
 $("ratio").addEventListener("change", () => {
   $("videoWrap").style.aspectRatio = $("ratio").value;
   $("video").style.height = "100%";
@@ -231,11 +333,14 @@ $("musicFile").addEventListener("change", () => {
   musicURL = URL.createObjectURL(file);
   $("music").src = musicURL;
   $("music").load();
-  $("status").textContent = "Music loaded. Press Play on the music controls via your phone's audio playback.";
+  $("music").style.display = "block";
+  $("status").textContent = "Music loaded. Music ऐकण्यासाठी audio controls वापर.";
 });
+
 $("musicVolume").addEventListener("input", () => {
   $("music").volume = Number($("musicVolume").value);
 });
+
 $("videoVolume").addEventListener("input", () => {
   $("video").volume = Number($("videoVolume").value);
 });
@@ -244,10 +349,12 @@ function addText() {
   $("textOverlay").textContent = $("textInput").value;
   $("textOverlay").style.fontSize = $("textSize").value + "px";
 }
+
 function clearText() {
   $("textOverlay").textContent = "";
   $("textInput").value = "";
 }
+
 $("textSize").addEventListener("input", addText);
 
 function resetEdit() {
@@ -262,16 +369,23 @@ function resetEdit() {
 
 function exportVideo() {
   const file = $("videoFile").files[0];
-  if (!file) return;
+  if (!file) {
+    alert("आधी व्हिडिओ निवड.");
+    return;
+  }
+
   const a = document.createElement("a");
   a.href = videoURL;
   a.download = file.name;
   document.body.appendChild(a);
   a.click();
   a.remove();
+
   $("status").textContent =
-    "Original video downloaded. Preview effects/text/music are not baked into this file yet.";
+    "Original video downloaded. Preview effects, blur and text are not baked into this file.";
 }
+
+updateBackgroundBlur();
 </script>
 </body>
 </html>
