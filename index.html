@@ -7,9 +7,7 @@
 <title>AI Cartoon Video Maker</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -31,18 +29,10 @@ header {
   z-index: 5;
 }
 
-.page {
-  display: none;
-  padding: 18px;
-}
+.page { display: none; padding: 18px; }
+.page.active { display: block; }
 
-.page.active {
-  display: block;
-}
-
-h2 {
-  color: #a78bfa;
-}
+h2 { color: #a78bfa; }
 
 .card {
   background: #191b2c;
@@ -60,6 +50,11 @@ button, .upload {
   font-size: 15px;
   font-weight: bold;
   cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 input, textarea {
@@ -131,22 +126,43 @@ video {
   font-size: 13px;
   line-height: 1.6;
 }
+
+#videoWorkflow {
+  display: none;
+}
+
+#videoWorkflow.show {
+  display: block;
+}
+
+.generate-btn {
+  width: 100%;
+  margin-top: 12px;
+  font-size: 17px;
+  padding: 17px;
+}
+
+.section-label {
+  color: #a78bfa;
+  font-weight: bold;
+  margin-top: 20px;
+}
 </style>
 </head>
 
 <body>
 
-<header>✨ AI Cartoon Video Maker</header>
+<header>✨ AI CARTOON VIDEO MAKER</header>
 
 <!-- PAGE 1: PICTURE -->
 <section id="picture" class="page active">
   <h2>📸 Picture</h2>
+
   <div class="card">
     <h3>Upload Your Picture</h3>
     <p class="small">Select an image from your phone.</p>
 
-    <input type="file" id="imageInput"
-    accept="image/*">
+    <input type="file" id="imageInput" accept="image/*">
 
     <img id="imagePreview" class="preview">
 
@@ -164,7 +180,7 @@ video {
     <h3>Write Your Story</h3>
 
     <textarea id="promptText"
-    placeholder="Describe your cartoon video here..."></textarea>
+      placeholder="Describe your cartoon video here..."></textarea>
 
     <button onclick="savePrompt()">
       Save Prompt
@@ -174,28 +190,45 @@ video {
   </div>
 </section>
 
-<!-- PAGE 3: IMAGE TO VIDEO -->
+<!-- PAGE 3: IMAGES TO VIDEO -->
 <section id="videoPage" class="page">
   <h2>🎬 Images to Video</h2>
 
   <div class="card">
-    <h3>Create AI Video</h3>
+    <h3>Create Your AI Video</h3>
 
     <p class="small">
-      Your selected picture and saved prompt
-      will be used for video generation.
+      First select a picture. Then write your prompt
+      and generate your video.
     </p>
 
-    <p id="videoImageStatus">Picture: Not selected</p>
-    <p id="videoPromptStatus">Prompt: Not saved</p>
+    <div id="videoWorkflow">
 
-    <button onclick="generateVideo()">
-      Generate Video
-    </button>
+      <p class="section-label">📸 Selected Picture</p>
 
-    <p id="generateStatus" class="small">
-      AI video generation API is not connected yet.
+      <img id="videoImagePreview" class="preview">
+
+      <p class="section-label">✍️ Write Your Video Prompt</p>
+
+      <textarea id="videoPromptText"
+        placeholder="Example: A cute 3D cartoon lion walking in a beautiful jungle..."></textarea>
+
+      <p class="small">
+        Describe how you want your picture to move.
+      </p>
+
+      <button class="generate-btn" onclick="generateVideo()">
+        🎬 Generate Video
+      </button>
+
+    </div>
+
+    <p id="videoWaiting" class="small">
+      Please select a picture from the Picture tab first.
     </p>
+
+    <p id="generateStatus" class="small"></p>
+
   </div>
 </section>
 
@@ -207,12 +240,11 @@ video {
     <h3>Your Generated Video</h3>
 
     <p class="small">
-      Paste your generated video URL below
-      after connecting an AI video service.
+      Enter your generated video URL below.
     </p>
 
     <input type="url" id="videoUrl"
-    placeholder="Paste generated video URL">
+      placeholder="Paste generated video URL">
 
     <button onclick="downloadVideo()">
       Download Video
@@ -228,46 +260,49 @@ video {
 <nav class="bottom-nav">
 
   <button class="nav-btn active"
-  onclick="openPage('picture',this)">
+    onclick="openPage('picture',this)">
     <span>🖼️</span>Picture
   </button>
 
   <button class="nav-btn"
-  onclick="openPage('prompt',this)">
+    onclick="openPage('prompt',this)">
     <span>✍️</span>Prompt
   </button>
 
   <button class="nav-btn"
-  onclick="openPage('videoPage',this)">
+    onclick="openPage('videoPage',this)">
     <span>🎬</span>Images to Video
   </button>
 
   <button class="nav-btn"
-  onclick="openPage('download',this)">
+    onclick="openPage('download',this)">
     <span>⬇️</span>Download
   </button>
 
 </nav>
 
 <script>
+
 let selectedImage = null;
 let savedPrompt = "";
 
 function openPage(page, button) {
 
   document.querySelectorAll(".page")
-  .forEach(p => p.classList.remove("active"));
+    .forEach(p => p.classList.remove("active"));
 
   document.getElementById(page)
-  .classList.add("active");
+    .classList.add("active");
 
   document.querySelectorAll(".nav-btn")
-  .forEach(b => b.classList.remove("active"));
+    .forEach(b => b.classList.remove("active"));
 
   button.classList.add("active");
 
   updateVideoInfo();
 }
+
+// IMAGE UPLOAD
 
 document.getElementById("imageInput")
 .addEventListener("change", function(e) {
@@ -275,6 +310,11 @@ document.getElementById("imageInput")
   const file = e.target.files[0];
 
   if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    alert("Please select an image!");
+    return;
+  }
 
   if (selectedImage) {
     URL.revokeObjectURL(selectedImage);
@@ -288,59 +328,107 @@ document.getElementById("imageInput")
   preview.style.display = "block";
 
   document.getElementById("imageStatus")
-  .textContent = "Picture selected: " + file.name;
+    .textContent = "Picture selected: " + file.name;
 
   updateVideoInfo();
 });
 
+// SAVE PROMPT
+
 function savePrompt() {
 
-  savedPrompt = document.getElementById("promptText").value.trim();
+  savedPrompt = document.getElementById("promptText")
+    .value.trim();
 
   if (!savedPrompt) {
     alert("Please write a prompt first!");
     return;
   }
 
+  document.getElementById("videoPromptText")
+    .value = savedPrompt;
+
   document.getElementById("promptStatus")
-  .textContent = "Prompt saved successfully!";
+    .textContent = "Prompt saved successfully! ✅";
 
   updateVideoInfo();
 }
 
+// SYNC PROMPT
+
+document.getElementById("videoPromptText")
+.addEventListener("input", function() {
+
+  savedPrompt = this.value.trim();
+
+  document.getElementById("promptText").value = this.value;
+
+});
+
+// UPDATE VIDEO PAGE
+
 function updateVideoInfo() {
 
-  document.getElementById("videoImageStatus")
-  .textContent = selectedImage ?
-  "Picture: Selected ✅" :
-  "Picture: Not selected";
+  const workflow = document.getElementById("videoWorkflow");
 
-  document.getElementById("videoPromptStatus")
-  .textContent = savedPrompt ?
-  "Prompt: Saved ✅" :
-  "Prompt: Not saved";
+  const waiting = document.getElementById("videoWaiting");
+
+  if (selectedImage) {
+
+    workflow.classList.add("show");
+    waiting.style.display = "none";
+
+    const preview = document.getElementById("videoImagePreview");
+
+    preview.src = selectedImage;
+    preview.style.display = "block";
+
+  } else {
+
+    workflow.classList.remove("show");
+    waiting.style.display = "block";
+
+  }
+
+  document.getElementById("videoPromptText")
+    .value = savedPrompt || document.getElementById("promptText").value;
 }
 
+// GENERATE VIDEO
+
 function generateVideo() {
+
+  const prompt = document.getElementById("videoPromptText")
+    .value.trim();
 
   if (!selectedImage) {
     alert("First upload a picture!");
     return;
   }
 
-  if (!savedPrompt) {
-    alert("First save your prompt!");
+  if (!prompt) {
+    alert("First write your video prompt!");
     return;
   }
 
+  savedPrompt = prompt;
+
+  document.getElementById("promptText").value = prompt;
+
   document.getElementById("generateStatus")
-  .textContent =
-  "Your picture and prompt are ready. Connect an AI video generation API to create the video.";
+    .textContent =
+    "Picture and prompt are ready! AI video API and backend connection are required to generate the actual video.";
+
+  alert("Your picture and prompt are ready! AI video API connection is still required.");
+
 }
+
+// DOWNLOAD VIDEO
 
 function downloadVideo() {
 
-  const url = document.getElementById("videoUrl").value.trim();
+  const url = document.getElementById("videoUrl")
+    .value.trim();
 
   if (!url) {
     alert("Please enter your generated video URL!");
@@ -348,6 +436,7 @@ function downloadVideo() {
   }
 
   try {
+
     const parsed = new URL(url);
 
     if (parsed.protocol !== "https:" &&
@@ -356,19 +445,25 @@ function downloadVideo() {
     }
 
     const a = document.createElement("a");
+
     a.href = parsed.href;
     a.download = "AI-Cartoon-Video.mp4";
     a.target = "_blank";
+
     document.body.appendChild(a);
     a.click();
     a.remove();
 
     document.getElementById("downloadStatus")
-    .textContent = "Download requested!";
+      .textContent = "Download requested!";
+
   } catch(e) {
+
     alert("Please enter a valid video URL!");
+
   }
 }
+
 </script>
 
 </body>
